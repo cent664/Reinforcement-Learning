@@ -1,0 +1,12 @@
+Eplison decay rate faster than 0.8 is bad. Doesn't explore enough in the first episodes to exploit the last episodes and win more consistently. (initial values = 1)
+
+Eplison decay rate faster than 0.9 is inconsistent. Sometimes learns, sometimes doesn't. (initial values = 1)
+
+Eplison decay rate slower than 0.9 is slow to learn. Doesn't decay the exploration rate fast enough, 0.9 performs better on average. (initial values = 1)
+
+Initial Eplison below 0.8 is inconsistent. Doesn't explore enough sometimes in the first episodes to greedify the last episodes to win. Sometimes does. (Decay rates = 0.9)
+
+Epsilon and alpha high at start (close to 1) does work better than lower values, given we decay them. (Decay rates = 0.9)
+
+
+Overall, decay rate of 0.9 (alpha and epsilon) and initial value of 1 works better than other cases. Also works better than static values. Discounting sucks.
