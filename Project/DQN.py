@@ -5,7 +5,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
 from makeshift_env import StockTradingEnv
-import matplotlib.pyplot as plt
+from plot import twodplot
 
 # DQN Stocks
 
@@ -76,27 +76,36 @@ def DQN_Agent():
     # Object for the solver
     dqn_solver = DQNSolver(observation_space, action_space)
 
-    state = env.reset()  # Get initial state
-    state = np.reshape(state, [1, observation_space])
-    step = 0
-    cumulative_reward = 0
     episode = 0
     score = []
-    while episode == 0:
+
+    # Running for a number of episodes
+    while episode <= 10000:
+
+        #  Resetting initial state, step size, cumulative reward and storing arrays at the start of each episode
         episode += 1
         state = env.reset()  # Get initial state
         state = np.reshape(state, [1, observation_space])
         step = 0
         cumulative_reward = 0
+
+        # To append step, cumulative reward, corresponding action to plot for each episode
         emptyx = []
         emptyy = []
         emptyaction = []
+
         #  Going through time series data
         while True:
-            step = step + 1
+            step += 1
 
             action = dqn_solver.act(state)  # Get action based on argmax of the Q value approximation from the NN
             state_next, reward, done, info = env.step(action)
+
+            if not done:
+                reward = reward
+            else:
+                reward = -reward
+
             cumulative_reward += reward
 
             if action == 0:
@@ -110,12 +119,7 @@ def DQN_Agent():
             emptyy.append(cumulative_reward)
             emptyaction.append(action_actual)
 
-            print("{} {}ing: Holdings = {} Balance = {} Cumulative reward = {}".format(step, action_actual, state_next[1], state_next[2], cumulative_reward))
-
-            if not done:
-                reward = reward
-            else:
-                reward = -reward
+            #print("{} {}ing: Holdings = {} Balance = {} Cumulative reward = {}".format(step, action_actual, state_next[1], state_next[2], cumulative_reward))
 
             state_next = np.reshape(state_next, [1, observation_space])
             dqn_solver.remember(state, action, reward, state_next, done)  # Remember this instance
@@ -123,23 +127,11 @@ def DQN_Agent():
 
             dqn_solver.experience_replay()  # Perform experience replay to update the network weights
 
-            #if done or step >=4000:
-            if step >= 4000:
+            if done or step >= 4000:
                 score.append(cumulative_reward)
                 break
-    plt.plot(emptyx, emptyy)
 
-    plt.xlabel('Steps')
-    plt.ylabel('Cumulative Reward')
-    plt.title('Steps vs Cumulative reward')
-
-    plt.show()
-
-    f = open("action.txt", "w")
-    for i in range(0, 4001):
-        f.write(emptyaction[i])
-        f.write("\n")
-    f.close()
+    #twodplot(emptyx, emptyy, emptyaction)
 
 if __name__ == "__main__":
     DQN_Agent()

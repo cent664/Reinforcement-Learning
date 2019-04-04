@@ -13,7 +13,7 @@ class StockTradingEnv():
 
     State:
         Num	Observation                 Min         Max
-        0	Price                       0           ?
+        0   Price                       0           ?
         1   Holdings                    ?           ?
         2   Balance                     0           ?
 
@@ -77,6 +77,8 @@ class StockTradingEnv():
             new_balance = balance - float(self.data[self.index])  # Balance = Balance - Current stock price
 
         # Don't have balance as a part of the reward. Balance gives perma -ve often
+        #current_portfolio_value = (holdings*float(self.data[self.index])) + balance
+        #new_portfolio_value = (new_holdings*float(self.data[self.index + 1])) + new_balance
 
         current_portfolio_value = (holdings*float(self.data[self.index]))
         new_portfolio_value = (new_holdings*float(self.data[self.index + 1]))
