@@ -77,18 +77,21 @@ def DQN_Agent():
     dqn_solver = DQNSolver(observation_space, action_space)
 
     episode = 0
-    score = []
+    score = [0]
 
     # Running for a number of episodes
     while episode <= 10000:
 
         #  Resetting initial state, step size, cumulative reward and storing arrays at the start of each episode
-        episode += 1
         state = env.reset()  # Get initial state
         state = np.reshape(state, [1, observation_space])
         step = 0
         cumulative_reward = 0
 
+        if episode != 0:
+            print("Episode: {}. Score : {}".format(episode, score[episode]))
+
+        episode += 1
         # To append step, cumulative reward, corresponding action to plot for each episode
         emptyx = []
         emptyy = []
