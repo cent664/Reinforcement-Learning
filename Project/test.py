@@ -11,29 +11,36 @@ import matplotlib.pyplot as plt
 
 df = pd.read_csv("NFLX.csv")  # Reading the data
 
-current_index = 4
+current_index = 3944
 
 for i in range(current_index - 4, current_index + 1):
     data = df[['Low', 'Close', 'Open', 'High']].iloc[i].values
+    plt.bar(i + 1, data[1] - data[0], width=0.8, bottom=data[0], align='center', data=None, color='White', edgecolor='Black', linewidth=1.0)
+    if data[2] > data[1]:
+        plt.bar(i + 1, data[2] - data[1], width=0.8, bottom=data[1], align='center', data=None, color='Green', edgecolor='Black', linewidth=1.0)
+    else:
+        plt.bar(i + 1, data[1] - data[2], width=0.8, bottom=data[2], align='center', data=None, color='Red', edgecolor='Black', linewidth=1.0)
+    plt.bar(i + 1, data[3] - data[2], width=0.8, bottom=data[2], align='center', data=None, color='White', edgecolor='Black', linewidth=1.0)
 
-data = [1.2, 1.4, 2.9, 3.1]
-plt.bar(1, data[1]-data[0], width=0.8, bottom=data[0], align='center', data=None)
-plt.bar(1, data[2]-data[1], width=0.8, bottom=data[1], align='center', data=None)
-plt.bar(1, data[3]-data[2], width=0.8, bottom=data[2], align='center', data=None)
-data = [1.3, 1.6, 2.7, 3.5]
-plt.bar(2, data[1]-data[0], width=0.8, bottom=data[0], align='center', data=None)
-plt.bar(2, data[2]-data[1], width=0.8, bottom=data[1], align='center', data=None)
-plt.bar(2, data[3]-data[2], width=0.8, bottom=data[2], align='center', data=None)
-data = [1.1, 1.3, 2.5, 3.6]
-plt.bar(3, data[1]-data[0], width=0.8, bottom=data[0], align='center', data=None)
-plt.bar(3, data[2]-data[1], width=0.8, bottom=data[1], align='center', data=None)
-plt.bar(3, data[3]-data[2], width=0.8, bottom=data[2], align='center', data=None)
-data = [0.9, 1.8, 2.6, 3.7]
-plt.bar(4, data[1]-data[0], width=0.8, bottom=data[0], align='center', data=None)
-plt.bar(4, data[2]-data[1], width=0.8, bottom=data[1], align='center', data=None)
-plt.bar(4, data[3]-data[2], width=0.8, bottom=data[2], align='center', data=None)
-data = [1.4, 1.6, 2.1, 3.8]
-plt.bar(5, data[1]-data[0], width=0.8, bottom=data[0], align='center', data=None)
-plt.bar(5, data[2]-data[1], width=0.8, bottom=data[1], align='center', data=None)
-plt.bar(5, data[3]-data[2], width=0.8, bottom=data[2], align='center', data=None)
 plt.show()
+
+"""
+for i in range(0, 4000):
+
+    data = df[['Low', 'Close', 'Open', 'High']].iloc[i].values
+
+    if data[2] > data[1]:
+        gap1 = data[1] - data[0]
+        gap2 = data[2] - data[1]
+        gap3 = data[3] - data[2]
+    else:
+        gap1 = data[2] - data[0]
+        gap2 = data[1] - data[2]
+        gap3 = data[3] - data[1]
+
+
+    if ((gap1 > 2 and gap1 < 5) and (gap2 > 2 and gap2 < 5) and (gap3 > 2 and gap3 < 5)):
+        print(data[0], data[1], data[2], data[3])
+        print(gap1, gap2, gap3)
+        print(i)
+"""
