@@ -122,7 +122,7 @@ def DQN_Agent():
             emptyy.append(cumulative_reward)
             emptyaction.append(action_actual)
 
-            #print("{} {}ing: Holdings = {} Balance = {} Cumulative reward = {}".format(step, action_actual, state_next[1], state_next[2], cumulative_reward))
+            #print("{} {}ing: Holdings = {} Cumulative reward = {}".format(step, action_actual, state_next[1], cumulative_reward))
 
             state_next = np.reshape(state_next, [1, observation_space])
             dqn_solver.remember(state, action, reward, state_next, done)  # Remember this instance
