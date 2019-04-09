@@ -1,46 +1,25 @@
-import math
-import gym
-from gym import spaces, logger
-from gym.utils import seeding
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+df = pd.read_csv("TSLA.csv")  # Reading the data
 
-# DQN Stocks
+current_index = 1500
+window_size = 500
+w = 1.0
+lw = 0.5
 
-df = pd.read_csv("NFLX.csv")  # Reading the data
-
-current_index = 3944
-
-for i in range(current_index - 4, current_index + 1):
+for i in range(current_index - window_size + 1, current_index + 1):
     data = df[['Low', 'Close', 'Open', 'High']].iloc[i].values
-    plt.bar(i + 1, data[1] - data[0], width=0.8, bottom=data[0], align='center', data=None, color='White', edgecolor='Black', linewidth=1.0)
+
+    #print("Low={}, Close={}, Open={}, High={}".format(data[0], data[1], data[2], data[3]))
+
     if data[2] > data[1]:
-        plt.bar(i + 1, data[2] - data[1], width=0.8, bottom=data[1], align='center', data=None, color='Green', edgecolor='Black', linewidth=1.0)
+        plt.bar(i + 1, data[1] - data[0], width=w, bottom=data[0], color='#be2409', edgecolor='Black', linewidth=lw)
+        plt.bar(i + 1, data[2] - data[1], width=w, bottom=data[1], color='White', edgecolor='Black', linewidth=lw)
+        plt.bar(i + 1, data[3] - data[2], width=w, bottom=data[2], color='#fddc54', edgecolor='Black', linewidth=lw)
     else:
-        plt.bar(i + 1, data[1] - data[2], width=0.8, bottom=data[2], align='center', data=None, color='Red', edgecolor='Black', linewidth=1.0)
-    plt.bar(i + 1, data[3] - data[2], width=0.8, bottom=data[2], align='center', data=None, color='White', edgecolor='Black', linewidth=1.0)
+        plt.bar(i + 1, data[2] - data[0], width=w, bottom=data[0], color='#be2409', edgecolor='Black', linewidth=lw)
+        plt.bar(i + 1, data[1] - data[2], width=w, bottom=data[2], color='Black', edgecolor='Black', linewidth=lw)
+        plt.bar(i + 1, data[3] - data[1], width=w, bottom=data[1], color='#fddc54', edgecolor='Black', linewidth=lw)
 
 plt.show()
-
-"""
-for i in range(0, 4000):
-
-    data = df[['Low', 'Close', 'Open', 'High']].iloc[i].values
-
-    if data[2] > data[1]:
-        gap1 = data[1] - data[0]
-        gap2 = data[2] - data[1]
-        gap3 = data[3] - data[2]
-    else:
-        gap1 = data[2] - data[0]
-        gap2 = data[1] - data[2]
-        gap3 = data[3] - data[1]
-
-
-    if ((gap1 > 2 and gap1 < 5) and (gap2 > 2 and gap2 < 5) and (gap3 > 2 and gap3 < 5)):
-        print(data[0], data[1], data[2], data[3])
-        print(gap1, gap2, gap3)
-        print(i)
-"""

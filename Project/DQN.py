@@ -5,6 +5,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
 from makeshift_env import StockTradingEnv
+import matplotlib.pyplot as plt
 from plot import twodplot
 
 # DQN Stocks
@@ -80,7 +81,7 @@ def DQN_Agent():
     score = [0]
 
     # Running for a number of episodes
-    while episode <= 10000:
+    while episode <= 10:
 
         #  Resetting initial state, step size, cumulative reward and storing arrays at the start of each episode
         state = env.reset()  # Get initial state
@@ -130,11 +131,11 @@ def DQN_Agent():
 
             dqn_solver.experience_replay()  # Perform experience replay to update the network weights
 
-            if done or step >= 4000:
+            if done or step > 1000:
                 score.append(cumulative_reward)
+                twodplot(emptyx, emptyy, emptyaction)
                 break
-
-    #twodplot(emptyx, emptyy, emptyaction)
+    plt.show()
 
 if __name__ == "__main__":
     DQN_Agent()

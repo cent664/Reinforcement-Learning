@@ -9,22 +9,17 @@ import pandas as pd
 class StockTradingEnv():
     """
     Description:
-
-
     State:
         Num	Observation                 Min         Max
         0   Price                       0           ?
         1   Holdings                    ?           ?
-
     Actions:
         Num	    Action
         0	    Sell
         1	    Hold
         2       Buy
-
     Reward:
         Difference in portfolio values = [p_current*h_current + b_current] - [p_old*h1_old + b1_old]
-
     Starting State:
         Price of the stock at the start of the time-series
     """
