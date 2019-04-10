@@ -22,8 +22,8 @@ exploration_max = 1.0  # Initial exploration rate
 exploration_min = 0.01  # Min value of exploration rate post decay
 exploration_decay = 0.995  # Exploration rate decay rate
 
-episodes = 10
-steps = 1000
+episodes = 5
+steps = 500
 
 class DQNSolver:
 
