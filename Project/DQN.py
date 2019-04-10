@@ -22,6 +22,9 @@ exploration_max = 1.0  # Initial exploration rate
 exploration_min = 0.01  # Min value of exploration rate post decay
 exploration_decay = 0.995  # Exploration rate decay rate
 
+episodes = 10
+steps = 1000
+
 class DQNSolver:
 
     def __init__(self, observation_space, action_space):
@@ -77,31 +80,25 @@ def DQN_Agent():
     # Object for the solver
     dqn_solver = DQNSolver(observation_space, action_space)
 
-    episode = 0
+    episode = 1
     score = [0]
 
     # Running for a number of episodes
-    while episode <= 10:
+    while episode <= episodes:
 
         #  Resetting initial state, step size, cumulative reward and storing arrays at the start of each episode
         state = env.reset()  # Get initial state
         state = np.reshape(state, [1, observation_space])
-        step = 0
+        step = 1
         cumulative_reward = 0
 
-        if episode != 0:
-            print("Episode: {}. Score : {}".format(episode, score[episode]))
-
-        episode += 1
         # To append step, cumulative reward, corresponding action to plot for each episode
         emptyx = []
         emptyy = []
         emptyaction = []
 
         #  Going through time series data
-        while True:
-            step += 1
-
+        while step <= steps:
             action = dqn_solver.act(state)  # Get action based on argmax of the Q value approximation from the NN
             state_next, reward, done, info = env.step(action)
 
@@ -131,11 +128,25 @@ def DQN_Agent():
 
             dqn_solver.experience_replay()  # Perform experience replay to update the network weights
 
-            if done or step > 1000:
+            if done or step == steps:
                 score.append(cumulative_reward)
-                twodplot(emptyx, emptyy, emptyaction)
+                twodplot(emptyx, emptyy, emptyaction, episode)
                 break
+            else:
+                step += 1
+
+        print("Episode: {}. Score : {}".format(episode, score[episode]))
+        episode += 1
+
     plt.show()
 
 if __name__ == "__main__":
     DQN_Agent()
+
+"""    
+TO-DO:
+In the compute_metric func of the env, plot 'window size' number of plots.
+Resize the images to something smaller and save them as np arrays
+Use the resulting np arrays as part of the state.
+Change the NN to be a CNN with correct dimensions and input and output layers.
+"""
