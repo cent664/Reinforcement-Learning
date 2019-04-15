@@ -63,6 +63,7 @@ def make_graph(test_array):
                     edgecolor='Black', linewidth=lw)
             plt.bar(current_index - window_size + 1 + j, high - close, width=w, bottom=close, color='#fddc54',
                     edgecolor='Black', linewidth=lw)
+    plt.show()
 
 
 def coloring(test_array):
@@ -134,6 +135,7 @@ if __name__ == '__main__':
 
     # Creating the final colored 2D array representation of the graph
     final_array = coloring(test_array)
+    print((final_array).shape)
 
     # To check if I've got the pixel values correctly
     save_to_file(final_array)
@@ -141,4 +143,3 @@ if __name__ == '__main__':
     # Displaying the graph equivalent of my np array CNN fodder
     im = Image.fromarray(np.uint8(final_array), 'L')
     im.show()
-    plt.show()

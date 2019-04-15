@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 np.set_printoptions(threshold=sys.maxsize)
+from PIL import Image
 
 df = pd.read_csv("NFLX.csv")  # Reading the data
 
@@ -125,13 +126,18 @@ if __name__ == '__main__':
 
     # To compute a 2D array of low, close, open, high prices as indexes
     test_array = compute_array(current_index, window_size)
+    print(test_array)
 
     # To plot a stacked bar graph based on the test array for visualization
-    # make_graph(test_array)
+    make_graph(test_array)
 
     # Creating the final colored 2D array representation of the graph
     final_array = coloring(test_array)
     print((final_array).shape)
 
     # To check if I've got the pixel values correctly
-    # save_to_file(final_array)
+    save_to_file(final_array)
+
+    # Displaying the graph equivalent of my np array CNN fodder
+    im = Image.fromarray(np.uint8(final_array), 'L')
+    im.show()

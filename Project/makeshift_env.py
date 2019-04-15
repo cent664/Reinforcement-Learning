@@ -4,6 +4,7 @@ from gym import spaces, logger
 from gym.utils import seeding
 import numpy as np
 import pandas as pd
+from PIL import Image
 
 
 class StockTradingEnv():
@@ -11,7 +12,7 @@ class StockTradingEnv():
     Description:
     State:
         Num	Observation                 Min         Max
-        0   Price                       0           ?
+        0   Np array                    ?           ?
         1   Holdings                    ?           ?
     Actions:
         Num	    Action
@@ -33,10 +34,8 @@ class StockTradingEnv():
         self.holdings = 0
         self.window_size = 5
 
-        high = np.array([self.index, self.holdings])
-
         self.action_space = spaces.Discrete(3)
-        self.observation_space = spaces.Box(-high, high, dtype=np.float32)
+        self.observation_space = spaces.Box(low=0, high=255, shape=(84, 84, 1))
 
     def compute_metric(self, current_price_index, window_size):
         metric = float(self.data[current_price_index])  # For now, metric = current adjusted closing price
