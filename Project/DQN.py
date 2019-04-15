@@ -73,6 +73,7 @@ class DQNSolver:
         self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
 
 def DQN_Agent():
+
     # Get action and observation space
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
@@ -145,8 +146,13 @@ if __name__ == "__main__":
 
 """    
 TO-DO:
-In the compute_metric func of the env, plot 'window size' number of plots.
-Resize the images to something smaller and save them as np arrays
-Use the resulting np arrays as part of the state.
+question about image size
+Change obs space, network
+Square image?
+feed np array into cnn
 Change the NN to be a CNN with correct dimensions and input and output layers.
+Include volume in the state
+short, long in state
+Include week, month, more months image sets
+Upload env to gym
 """

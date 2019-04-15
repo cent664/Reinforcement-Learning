@@ -2,13 +2,18 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-
+from PIL import Image
 np.set_printoptions(threshold=sys.maxsize)
 
 df = pd.read_csv("NFLX.csv")  # Reading the data
 
+# Parameters
+current_index = 1500
+window_size = 5
 
-def compute_array(current_index, window_size):
+
+def compute_array():
+
     # To store indexes for Low, Close, Open, High for 'window_size' number of days at current_index
     test_array = []
 
@@ -30,6 +35,7 @@ def compute_array(current_index, window_size):
 
 
 def make_graph(test_array):
+
     # Graph drawing parameters
     w = 1.0
     lw = 0.5
@@ -57,16 +63,19 @@ def make_graph(test_array):
                     edgecolor='Black', linewidth=lw)
             plt.bar(current_index - window_size + 1 + j, high - close, width=w, bottom=close, color='#fddc54',
                     edgecolor='Black', linewidth=lw)
-    plt.show()
 
 
 def coloring(test_array):
+
     # Dimensions of the final array
     columns = len(test_array[0])  # Depends on the relative ranges between Low, Close, Open, High
     rows = np.amax(test_array)  # window_size
 
-    # Array of 255s (white pixels) based on financial data ranges for 'window_size' number of days at current_index
-    final_array = np.ones([rows, columns]) * 255
+    # Creating an array of zeros based on financial data ranges for 'window_size' number of days at current_index
+    final_array = np.ones([rows, columns + 127*5]) * 255
+
+    # j -> 0,1,2,3,4
+    # j -> 0-127, 128-255, 256-383, 384-511, 512-640
 
     # Filling in the colors in the final array similar to the graph
     for j in range(0, columns):
@@ -79,26 +88,26 @@ def coloring(test_array):
         if open > close:
 
             for i in range(low, close):
-                final_array[i][j] = 100
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 100
 
             for i in range(close, open):
-                final_array[i][j] = 200
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 200
 
             for i in range(open, high):
-                final_array[i][j] = 150
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 150
 
         else:
             for i in range(low, open):
-                final_array[i][j] = 100
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 100
 
             for i in range(open, close):
-                final_array[i][j] = 50
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 50
 
             for i in range(close, high):
-                final_array[i][j] = 150
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 150
 
     final_array = np.flip(final_array, axis=0)
-    return (final_array)
+    return(final_array)
 
 
 def save_to_file(final_array):
@@ -114,40 +123,22 @@ def save_to_file(final_array):
 
     f.close()
 
-
 if __name__ == '__main__':
 
-    # Parameters
-    current_index = 1500
-    window_size = 5
+    # To compute a 2D array of low, close, open, high prices as indexes
+    test_array = compute_array()
+    print(test_array)
 
-    max_rows = 0
+    # To plot a stacked bar graph based on the test array for visualization
+    make_graph(test_array)
 
-    # for current_index in range(4, 4000):
-    #
-    #     # To compute a 2D array of low, close, open, high prices as indexes
-    #     test_array = compute_array(current_index, window_size)
-    #
-    #     # To plot a stacked bar graph based on the test array for visualization
-    #     # make_graph(test_array)
-    #
-    #     # Creating the final colored 2D array representation of the graph
-    #     final_array = coloring(test_array)
-    #
-    #     if len(final_array) > max_rows:
-    #         max_rows = len(final_array)
-    #
-    # print(max_rows)
-
-    a = np.ones([3, 3])
-    a.resize([5, 5])
-
-    l = len(a)
-    for i in range(0, l):
-        for j in range(0, l):
-            print(int(a[i][j]), end=' ')
-        print("\n")
-
+    # Creating the final colored 2D array representation of the graph
+    final_array = coloring(test_array)
 
     # To check if I've got the pixel values correctly
-    # save_to_file(final_array)
+    save_to_file(final_array)
+
+    # Displaying the graph equivalent of my np array CNN fodder
+    im = Image.fromarray(np.uint8(final_array), 'L')
+    im.show()
+    plt.show()

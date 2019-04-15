@@ -2,13 +2,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-
 np.set_printoptions(threshold=sys.maxsize)
 
 df = pd.read_csv("NFLX.csv")  # Reading the data
 
 
 def compute_array(current_index, window_size):
+
     # To store indexes for Low, Close, Open, High for 'window_size' number of days at current_index
     test_array = []
 
@@ -16,7 +16,7 @@ def compute_array(current_index, window_size):
     for i in range(current_index - window_size + 1, current_index + 1):
         data = df[['Low', 'Close', 'Open', 'High']].iloc[i].values
 
-        # Standardizing to an integer range
+        # Standardizing to an integer range for indexes
         low = int(round(data[0], 3) * 10 ** 3)
         close = int(round(data[1], 3) * 10 ** 3)
         open = int(round(data[2], 3) * 10 ** 3)
@@ -30,6 +30,7 @@ def compute_array(current_index, window_size):
 
 
 def make_graph(test_array):
+
     # Graph drawing parameters
     w = 1.0
     lw = 0.5
@@ -61,6 +62,7 @@ def make_graph(test_array):
 
 
 def coloring(test_array):
+
     # Dimensions of the final array
     columns = len(test_array[0])  # Depends on the relative ranges between Low, Close, Open, High
     rows = np.amax(test_array)  # window_size
@@ -98,7 +100,7 @@ def coloring(test_array):
                 final_array[i][j] = 150
 
     final_array = np.flip(final_array, axis=0)
-    return (final_array)
+    return(final_array)
 
 
 def save_to_file(final_array):
@@ -114,40 +116,22 @@ def save_to_file(final_array):
 
     f.close()
 
-
 if __name__ == '__main__':
+
 
     # Parameters
     current_index = 1500
     window_size = 5
 
-    max_rows = 0
+    # To compute a 2D array of low, close, open, high prices as indexes
+    test_array = compute_array(current_index, window_size)
 
-    # for current_index in range(4, 4000):
-    #
-    #     # To compute a 2D array of low, close, open, high prices as indexes
-    #     test_array = compute_array(current_index, window_size)
-    #
-    #     # To plot a stacked bar graph based on the test array for visualization
-    #     # make_graph(test_array)
-    #
-    #     # Creating the final colored 2D array representation of the graph
-    #     final_array = coloring(test_array)
-    #
-    #     if len(final_array) > max_rows:
-    #         max_rows = len(final_array)
-    #
-    # print(max_rows)
+    # To plot a stacked bar graph based on the test array for visualization
+    # make_graph(test_array)
 
-    a = np.ones([3, 3])
-    a.resize([5, 5])
-
-    l = len(a)
-    for i in range(0, l):
-        for j in range(0, l):
-            print(int(a[i][j]), end=' ')
-        print("\n")
-
+    # Creating the final colored 2D array representation of the graph
+    final_array = coloring(test_array)
+    print((final_array).shape)
 
     # To check if I've got the pixel values correctly
     # save_to_file(final_array)

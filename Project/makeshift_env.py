@@ -43,9 +43,6 @@ class StockTradingEnv():
         return metric
 
     def reset(self):
-        self.index = 0  # Initial state index
-        self.holdings = 0
-        self.window_size = 5
         metric = self.compute_metric(self.index, self.window_size)
         self.state = [metric, self.holdings]
         return self.state
