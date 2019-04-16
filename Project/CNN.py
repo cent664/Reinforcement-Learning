@@ -35,4 +35,3 @@ class ConvolutionalNeuralNetwork:
                                              rho=0.95,
                                              epsilon=0.01),
                            metrics=["accuracy"])
-        self.model.summary()
