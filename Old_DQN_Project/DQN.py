@@ -23,7 +23,7 @@ exploration_min = 0.01  # Min value of exploration rate post decay
 exploration_decay = 0.995  # Exploration rate decay rate
 
 episodes = 5
-steps = 500
+steps = 200
 
 class DQNSolver:
 
@@ -74,8 +74,8 @@ class DQNSolver:
 
 def DQN_Agent():
     # Get action and observation space
-    observation_space = env.observation_space.shape[0]
-    action_space = env.action_space.n
+    observation_space = env.observation_space
+    action_space = env.action_space
 
     # Object for the solver
     dqn_solver = DQNSolver(observation_space, action_space)

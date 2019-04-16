@@ -35,8 +35,11 @@ class StockTradingEnv():
 
         high = np.array([self.index, self.holdings])
 
-        self.action_space = spaces.Discrete(3)
-        self.observation_space = spaces.Box(-high, high, dtype=np.float32)
+        # self.action_space = spaces.Discrete(3)
+        # self.observation_space = spaces.Box(-high, high, dtype=np.float32)
+
+        self.action_space = 3
+        self.observation_space = 2
 
     def compute_metric(self, current_price_index, window_size):
         metric = float(self.data[current_price_index])  # For now, metric = current adjusted closing price
