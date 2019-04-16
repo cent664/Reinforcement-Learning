@@ -2,8 +2,8 @@ import numpy as np
 import random
 from collections import deque
 from keras.models import Sequential
-from keras.layers import Dense
-from keras.optimizers import Adam
+from keras.layers import Conv2D, Flatten, Dense
+from keras.optimizers import RMSprop
 from makeshift_env import StockTradingEnv
 import matplotlib.pyplot as plt
 from plot import twodplot
@@ -23,7 +23,7 @@ exploration_min = 0.01  # Min value of exploration rate post decay
 exploration_decay = 0.995  # Exploration rate decay rate
 
 episodes = 5
-steps = 500
+steps = 200
 
 class DQNSolver:
 
@@ -35,12 +35,14 @@ class DQNSolver:
 
         # Defining the network structure
         self.model = Sequential()
-        self.model.add(Dense(64, input_shape=(observation_space,), activation="relu"))  # Observation space -> 64
-        self.model.add(Dense(32, activation="relu"))  # 64 -> 32
-        self.model.add(Dense(8, activation="relu"))  # 32 -> 8
-        self.model.add(Dense(self.action_space, activation="linear"))  # 8 -> Action space
+        self.model.add(Conv2D(32, 8, strides=(4, 4), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
+        self.model.add(Conv2D(64, 4, strides=(2, 2), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
+        self.model.add(Conv2D(64, 3, strides=(1, 1), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
+        self.model.add(Flatten())
+        self.model.add(Dense(512, activation="relu"))
+        self.model.add(Dense(action_space))
 
-        self.model.compile(loss="mse", optimizer=Adam(lr=learning_rate))  # Loss function and optimizer
+        self.model.compile(loss="mean_squared_error", optimizer=RMSprop(lr=0.00025, rho=0.95, epsilon=0.01), metrics=["accuracy"])
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))  # Remembering instances in memory for future use
@@ -73,10 +75,9 @@ class DQNSolver:
         self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
 
 def DQN_Agent():
-
     # Get action and observation space
-    observation_space = env.observation_space.shape[0]
-    action_space = env.action_space.n
+    observation_space = env.observation_space
+    action_space = env.action_space
 
     # Object for the solver
     dqn_solver = DQNSolver(observation_space, action_space)
@@ -89,7 +90,7 @@ def DQN_Agent():
 
         #  Resetting initial state, step size, cumulative reward and storing arrays at the start of each episode
         state = env.reset()  # Get initial state
-        state = np.reshape(state, [1, observation_space])
+        # state = np.reshape(state, [1, observation_space])
         step = 1
         cumulative_reward = 0
 
@@ -123,7 +124,7 @@ def DQN_Agent():
 
             #print("{} {}ing: Holdings = {} Cumulative reward = {}".format(step, action_actual, state_next[1], cumulative_reward))
 
-            state_next = np.reshape(state_next, [1, observation_space])
+            # state_next = np.reshape(state_next, [1, observation_space])
             dqn_solver.remember(state, action, reward, state_next, done)  # Remember this instance
             state = state_next  # Update the state
 
@@ -146,13 +147,11 @@ if __name__ == "__main__":
 
 """    
 TO-DO:
-question about image size
-Change obs space, network
-Square image?
 feed np array into cnn
 Change the NN to be a CNN with correct dimensions and input and output layers.
 Include volume in the state
 short, long in state
 Include week, month, more months image sets
 Upload env to gym
+
 """
