@@ -23,7 +23,7 @@ exploration_min = 0.01  # Min value of exploration rate post decay
 exploration_decay = 0.995  # Exploration rate decay rate
 
 episodes = 5
-steps = 200
+steps = 50
 
 class DQNSolver:
 
@@ -63,8 +63,7 @@ class DQNSolver:
             q_update = reward  # Reward obtained for a particular state, action pair
             if not done:
                 # Obtain Q value based on immediate reward and predicted q* value of next state
-
-                q_update = reward + gamma * np.amax(self.model.predict(state_next)[0])
+                q_update = reward + gamma * np.amax(self.model.predict(state_next))
 
             q_values = self.model.predict(state)  # Obtain q value tuple for that state
             q_values[0][action] = q_update  # Update the q value for that state, action (one that we took)
@@ -146,11 +145,11 @@ if __name__ == "__main__":
     DQN_Agent()
 
 """    
-TO-DO:
-feed np array into cnn
-Change the NN to be a CNN with correct dimensions and input and output layers.
-Include volume in the state
-short, long in state
+TODO:
+Check input dimensions, observation space AND image dimensions (axis in np.expand_dims)
+Input my np array. Decide on dimensions.
+Fix rewards, state representation (add holdings/position, volume)
+Remove adjusted close, use close for reward?
 Include week, month, more months image sets
 Upload env to gym
 

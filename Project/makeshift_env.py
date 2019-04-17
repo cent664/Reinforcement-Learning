@@ -34,11 +34,15 @@ class StockTradingEnv():
         self.holdings = 0
         self.window_size = 5
 
+        # self.observation_space = spaces.Box(low=0, high=255, shape=(84, 84, 1))
+
         self.action_space = 3
         self.observation_space = (1, 84, 84)
 
     def compute_im(self, current_price_index, window_size):
         im = Image.open("84by84.png").convert('L')
+        im = np.expand_dims(im, axis=0)
+        im = np.expand_dims(im, axis=0)
         im_data = np.asarray(im)
 
         return im_data
