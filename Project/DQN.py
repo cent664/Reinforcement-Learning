@@ -52,7 +52,7 @@ class DQNSolver:
         if np.random.rand() < self.exploration_rate:
             return random.randrange(self.action_space)
         # Q values based on model prediction on current state (Initially based on random weights)
-        q_values = self.model.predict(state)
+        q_values = self.model.predict(state[0])
         return np.argmax(q_values[0])  # Argmax of tuple of 3 Q values, one for each action
 
     def experience_replay(self):
@@ -63,12 +63,12 @@ class DQNSolver:
             q_update = reward  # Reward obtained for a particular state, action pair
             if not done:
                 # Obtain Q value based on immediate reward and predicted q* value of next state
-                q_update = reward + gamma * np.amax(self.model.predict(state_next))
+                q_update = reward + gamma * np.amax(self.model.predict(state_next[0]))
 
-            q_values = self.model.predict(state)  # Obtain q value tuple for that state
+            q_values = self.model.predict(state[0])  # Obtain q value tuple for that state
             q_values[0][action] = q_update  # Update the q value for that state, action (one that we took)
             # Update the weights of the network based on the updated q value (based on immediate reward)
-            self.model.fit(state, q_values, epochs=1, verbose=0)
+            self.model.fit(state[0], q_values, epochs=1, verbose=0)
 
         self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
         self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
@@ -146,6 +146,9 @@ if __name__ == "__main__":
 
 """    
 TODO:
+#Fix image, 30 days?
+Replacement for model.add
+Split the network into two, one part upto fully connected, concat output of N1 with (vol, holdings) and feed into N2.
 Check input dimensions, observation space AND image dimensions (axis in np.expand_dims)
 Input my np array. Decide on dimensions.
 Fix rewards, state representation (add holdings/position, volume)
