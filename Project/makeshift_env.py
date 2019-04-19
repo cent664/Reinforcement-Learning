@@ -5,7 +5,7 @@ from gym.utils import seeding
 import numpy as np
 import pandas as pd
 from PIL import Image
-
+from np_array_data import compute_array, reduce_dim, coloring
 
 class StockTradingEnv():
     """
@@ -32,34 +32,38 @@ class StockTradingEnv():
     def __init__(self):
         df = pd.read_csv("NFLX.csv")  # Reading the data
 
-        self.data_close = df['Adj Close'].values
+        self.data_close = df['Adj Close'].values  #TODO: Change adjusted close to something else?
         self.data_volume = df['Volume'].values
 
-        self.index = 5  # Initial state index
+        self.index = 4  # Initial state index
         self.holdings = 0  # Initial number of stocks I own
-        self.window_size = 5  # Window size to consider when computing the state
+        self.window_size = 5  # Number of data points in the state
+        self.precision = 2  # Number of significant digits after the decimal
+        self.static_image_size = (1000, 40)  # Shape on input image into the CNN. Hard coded for now.
 
         # self.observation_space = spaces.Box(low=0, high=255, shape=(84, 84, 1))
 
         self.action_space = 3
-        self.observation_space = (1, 84, 84)
+        self.observation_space = (1, 1000, 40)
 
     def compute_im(self, current_price_index, window_size):
-        im = Image.open("84by84.png").convert('L')  # Converting to grayscale
 
-        # Expanding from 2D to 4D since the CNN expends 4 dimensions
-        im = np.expand_dims(im, axis=0)
-        im = np.expand_dims(im, axis=0)
+        test_array = compute_array(current_price_index, window_size, self.precision)
+        test_array = reduce_dim(test_array)
+        im_data = coloring(test_array, self.static_image_size)
 
-        # Convering the image to np array
-        im_data = np.asarray(im)
+        # Expanding from 2D to 4D since the CNN expects 4 dimensions
+        im_data = np.expand_dims(im_data, axis=0)
+        im_data = np.expand_dims(im_data, axis=0)
+
         return im_data
 
     def reset(self):
         # Compute the np array representation of the image at that index of size 'window_size'
-        im = self.compute_im(5, self.window_size)
+        im = self.compute_im(4, self.window_size)
 
-        volume = float(self.data_volume[5])  # Volume at starting index
+        # TODO: Expand volume and holdings
+        volume = float(self.data_volume[4])  # Volume at starting index
         self.state = [im, self.holdings, volume]
         return self.state
 

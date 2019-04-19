@@ -2,13 +2,12 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-np.set_printoptions(threshold=sys.maxsize)
 from PIL import Image
+np.set_printoptions(threshold=sys.maxsize)
 
 df = pd.read_csv("NFLX.csv")  # Reading the data
 
-
-def compute_array(current_index, window_size):
+def compute_array(current_index, window_size, precision):
 
     # To store indexes for Low, Close, Open, High for 'window_size' number of days at current_index
     test_array = []
@@ -18,17 +17,27 @@ def compute_array(current_index, window_size):
         data = df[['Low', 'Close', 'Open', 'High']].iloc[i].values
 
         # Standardizing to an integer range for indexes
-        low = int(round(data[0], 3) * 10 ** 3)
-        close = int(round(data[1], 3) * 10 ** 3)
-        open = int(round(data[2], 3) * 10 ** 3)
-        high = int(round(data[3], 3) * 10 ** 3)
+        low = int(round(data[0], precision) * 10 ** precision)
+        close = int(round(data[1], precision) * 10 ** precision)
+        open = int(round(data[2], precision) * 10 ** precision)
+        high = int(round(data[3], precision) * 10 ** precision)
 
         test_array.append([high, open, close, low])
 
     test_array = np.transpose(test_array)
     test_array = test_array - np.amin(test_array)
+
     return test_array
 
+def reduce_dim(test_array):
+
+    temp = test_array
+    temp = temp.flatten()
+    temp.sort()
+    temp = np.trim_zeros(temp)
+
+    test_array = test_array / temp[0]
+    return test_array.astype(int)
 
 def make_graph(test_array):
 
@@ -61,15 +70,15 @@ def make_graph(test_array):
                     edgecolor='Black', linewidth=lw)
     plt.show()
 
-
-def coloring(test_array):
+def coloring(test_array, static_image_size):
 
     # Dimensions of the final array
-    columns = len(test_array[0])  # Depends on the relative ranges between Low, Close, Open, High
-    rows = np.amax(test_array)  # window_size
+    columns = len(test_array[0])  # window_size
+    rows = np.amax(test_array)  # Depends on the relative ranges between Low, Close, Open, High
 
     # Array of 255s (white pixels) based on financial data ranges for 'window_size' number of days at current_index
-    final_array = np.ones([rows, columns]) * 255
+    final_array = np.ones(static_image_size) * 255
+    # final_array = np.ones([rows, columns]) * 255
 
     # Filling in the colors in the final array similar to the graph
     for j in range(0, columns):
@@ -103,6 +112,49 @@ def coloring(test_array):
     final_array = np.flip(final_array, axis=0)
     return(final_array)
 
+def coloring_visual(test_array):
+
+    # Dimensions of the final array
+    columns = len(test_array[0])  # window_size
+    rows = np.amax(test_array)  # Depends on the relative ranges between Low, Close, Open, High
+
+    # Creating an array of zeros based on financial data ranges for 'window_size' number of days at current_index
+    final_array = np.ones([rows, columns + 127*5]) * 255
+
+    # j -> 0,1,2,3,4
+    # j -> 0-127, 128-255, 256-383, 384-511, 512-640
+
+    # Filling in the colors in the final array similar to the graph
+    for j in range(0, columns):
+
+        low = test_array[len(test_array) - 1][j]
+        close = test_array[len(test_array) - 2][j]
+        open = test_array[len(test_array) - 3][j]
+        high = test_array[len(test_array) - 4][j]
+
+        if open > close:
+
+            for i in range(low, close):
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 100
+
+            for i in range(close, open):
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 200
+
+            for i in range(open, high):
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 150
+
+        else:
+            for i in range(low, open):
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 100
+
+            for i in range(open, close):
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 50
+
+            for i in range(close, high):
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 150
+
+    final_array = np.flip(final_array, axis=0)
+    return(final_array)
 
 def save_to_file(final_array):
     f = open("test.txt", "w")
@@ -121,18 +173,29 @@ if __name__ == '__main__':
 
 
     # Parameters
-    current_index = 1500
-    window_size = 5
+    current_index = 1500  # Index to get data from
+    window_size = 30  # Number of data points in the state
+    precision = 2  # Number of significant digits after the decimal
+    static_image_size = (1000, 40)  # Shape on input image into the CNN. Hard coded for now.
+
+    # TODO: Test for lower precision instead of normalizing.
 
     # To compute a 2D array of low, close, open, high prices as indexes
-    test_array = compute_array(current_index, window_size)
+    test_array = compute_array(current_index, window_size, precision)
+
+    # TODO: For now sacrificing accuracy to reduce size of the input image. Come up with a better representation later.
+    test_array = reduce_dim(test_array)
     print(test_array)
+    print(np.amax(test_array))
 
     # To plot a stacked bar graph based on the test array for visualization
     make_graph(test_array)
 
     # Creating the final colored 2D array representation of the graph
-    final_array = coloring(test_array)
+
+    #TODO: Decide the input size. Bring current index to the center
+    final_array = coloring(test_array, static_image_size)
+    # final_array = coloring_visual(test_array)  # Uncomment for visualization of the state
     print((final_array).shape)
 
     # To check if I've got the pixel values correctly
@@ -140,4 +203,5 @@ if __name__ == '__main__':
 
     # Displaying the graph equivalent of my np array CNN fodder
     im = Image.fromarray(np.uint8(final_array), 'L')
+    im.save("gray.bmp")
     im.show()

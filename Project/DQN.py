@@ -22,8 +22,8 @@ exploration_max = 1.0  # Initial exploration rate
 exploration_min = 0.01  # Min value of exploration rate post decay
 exploration_decay = 0.995  # Exploration rate decay rate
 
-episodes = 5
-steps = 50
+episodes = 10
+steps = 252
 
 class DQNSolver:
 
@@ -34,6 +34,7 @@ class DQNSolver:
         self.memory = deque(maxlen=memory_size)  # Will forget old values as new ones are appended
 
         # Defining the network structure
+        # TODO: Check filter numbers and size
         self.model = Sequential()
         self.model.add(Conv2D(32, 8, strides=(4, 4), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
         self.model.add(Conv2D(64, 4, strides=(2, 2), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
@@ -52,7 +53,7 @@ class DQNSolver:
         if np.random.rand() < self.exploration_rate:
             return random.randrange(self.action_space)
         # Q values based on model prediction on current state (Initially based on random weights)
-        q_values = self.model.predict(state[0])
+        q_values = self.model.predict(state[0])  #TODO: Find a way to include volume and holdings in state
         return np.argmax(q_values[0])  # Argmax of tuple of 3 Q values, one for each action
 
     def experience_replay(self):
@@ -144,16 +145,15 @@ def DQN_Agent():
 if __name__ == "__main__":
     DQN_Agent()
 
-"""    
-TODO:
-#Fix image, 30 days?
-Replacement for model.add
-Split the network into two, one part upto fully connected, concat output of N1 with (vol, holdings) and feed into N2.
-Check input dimensions, observation space AND image dimensions (axis in np.expand_dims)
-Input my np array. Decide on dimensions.
-Fix rewards, state representation (add holdings/position, volume)
-Remove adjusted close, use close for reward?
-Include week, month, more months image sets
-Upload env to gym
 
-"""
+# TODO:
+# Hardcode a 256 x 30 size and if any pixels go out, leave them out
+# current day in the center
+# Find a way to use GPU
+# Batches
+# Replacement for model.add
+# Split the network into two, one part upto fully connected, concat output of N1 with (vol, holdings) and feed into N2
+# Fix rewards, state representation (add holdings/position, volume)
+# Remove adjusted close(correlated?), use close for reward?
+# Include week, month, more months image sets
+# Upload env to gym
