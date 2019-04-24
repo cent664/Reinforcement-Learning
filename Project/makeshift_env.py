@@ -11,10 +11,10 @@ class StockTradingEnv():
     """
     Description:
     State:
-        Num	Observation                 Min         Max
-        0   Image                       ?           ?
-        1   Holdings                    ?           ?
-        2   Volume                      0           ?
+        Num	Observation                 Type/Context
+        0   Image                       2D np array of static size
+        1   Holdings                    (1 x 1) np vector containing holdings of current day
+        2   Volume                      (1 x window_size) np vector containing volume of stocks for last window_size days
 
     Actions:
         Num	    Action
@@ -23,25 +23,23 @@ class StockTradingEnv():
         2       Buy
 
     Reward:
-        Difference in portfolio values = [p_current*h_current + b_current] - [p_old*h1_old + b1_old]
+        Difference in portfolio values = (p_current * h_current) - (p_old * h1_old)
 
-    Starting State:
-        Price of the stock at the start of the time-series
+    Starting Price:
+        Adjusted Closing Price of the stock at the start of the time-series
     """
 
     def __init__(self):
-        df = pd.read_csv("NFLX.csv")  # Reading the data
+        self.df = pd.read_csv("NFLX.csv")  # Reading the data
 
-        self.data_close = df['Adj Close'].values  #TODO: Change adjusted close to something else?
-        self.data_volume = df['Volume'].values
+        self.data_close = self.df['Adj Close'].values  #TODO: Change adjusted close to something else?
+        self.data_volume = self.df['Volume'].values
 
         self.index = 4  # Initial state index
         self.holdings = 0  # Initial number of stocks I own
         self.window_size = 5  # Number of data points in the state
         self.precision = 2  # Number of significant digits after the decimal
         self.static_image_size = (1000, 40)  # Shape on input image into the CNN. Hard coded for now.
-
-        # self.observation_space = spaces.Box(low=0, high=255, shape=(84, 84, 1))
 
         self.action_space = 3
         self.observation_space = (1, 1000, 40)
@@ -63,33 +61,40 @@ class StockTradingEnv():
         im = self.compute_im(4, self.window_size)
 
         # TODO: Expand volume and holdings
-        volume = float(self.data_volume[4])  # Volume at starting index
-        self.state = [im, self.holdings, volume]
+        # Volume at from starting index - 5 -> starting index
+        volume = [float(self.data_volume[0]), float(self.data_volume[1]), float(self.data_volume[2]), float(self.data_volume[3]), float(self.data_volume[4])]
+        volume = np.reshape(volume, (1, -1))  # Reshaping along the right axis
+        self.state = [im, np.asarray([[self.holdings]]), volume]
         return self.state
 
     def step(self, action):
         im, holdings, volume = self.state
 
         if (action == 0):  # Sell
-            new_holdings = holdings - 1
+            new_holdings = holdings[0][0] - 1
 
         if (action == 1):  # Hold
-            new_holdings = holdings
+            new_holdings = holdings[0][0]
 
         if (action == 2):  # Buy
-            new_holdings = holdings + 1
+            new_holdings = holdings[0][0] + 1
 
         # Reward is price (difference x holdings) for the Adjusted Closing Price
-        current_portfolio_value = (holdings*float(self.data_close[self.index]))
+        current_portfolio_value = (holdings[0][0]*float(self.data_close[self.index]))
         new_portfolio_value = (new_holdings*float(self.data_close[self.index + 1]))
 
         reward = new_portfolio_value - current_portfolio_value
 
         self.index = self.index + 1  # Incrementing the window
+
+        # Computing new image, volume array with respect to the new index
         new_im = self.compute_im(self.index, self.window_size)
-        new_volume = float(self.data_volume[self.index])
+
+        new_volume = [float(self.data_volume[self.index-4]), float(self.data_volume[self.index-3]), float(self.data_volume[self.index-2]), float(self.data_volume[self.index-1]), float(self.data_volume[self.index])]
+        new_volume = np.reshape(new_volume, (1, -1))
+
 
         done = False
 
-        self.state = (new_im, new_holdings, new_volume)
-        return np.array(self.state), reward, done, {}
+        self.state = (new_im, np.asarray([[new_holdings]]), new_volume)
+        return self.state, reward, done, {}

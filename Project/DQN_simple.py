@@ -35,17 +35,15 @@ class DQNSolver:
 
         # Defining the network structure
         # TODO: Check filter numbers and size
-        self.model_CNN = Sequential()
-        self.model_CNN.add(Conv2D(32, 8, strides=(4, 4), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
-        self.model_CNN.add(Conv2D(32, 4, strides=(2, 2), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
-        self.model_CNN.add(Conv2D(32, 3, strides=(1, 1), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
-        self.model_CNN.add(Flatten())
+        self.model = Sequential()
+        self.model.add(Conv2D(32, 8, strides=(4, 4), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
+        self.model.add(Conv2D(64, 4, strides=(2, 2), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
+        self.model.add(Conv2D(64, 3, strides=(1, 1), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
+        self.model.add(Flatten())
+        self.model.add(Dense(512, activation="relu"))
+        self.model.add(Dense(action_space))
 
-        self.model_FC = Sequential()
-        self.model_FC.add(Dense(512, activation="relu"))
-        self.model_FC.add(Dense(action_space))
-
-        self.model_FC.compile(loss="mean_squared_error", optimizer=RMSprop(lr=0.00025, rho=0.95, epsilon=0.01), metrics=["accuracy"])
+        self.model.compile(loss="mean_squared_error", optimizer=RMSprop(lr=0.00025, rho=0.95, epsilon=0.01), metrics=["accuracy"])
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))  # Remembering instances in memory for future use
@@ -54,37 +52,24 @@ class DQNSolver:
         # Random action -> 0, 1, 2
         if np.random.rand() < self.exploration_rate:
             return random.randrange(self.action_space)
-
-        weights = self.model_CNN.predict(state[0])  # Getting weights from the CNN (input = image)
-        features = np.concatenate((weights, state[1], state[2]), axis=1)  # Adding holdings and volume to the weights before FC
-
         # Q values based on model prediction on current state (Initially based on random weights)
-        q_values = self.model_FC.predict(features)
-
+        q_values = self.model.predict(state[0])  #TODO: Find a way to include volume and holdings in state
         return np.argmax(q_values[0])  # Argmax of tuple of 3 Q values, one for each action
 
     def experience_replay(self):
         if len(self.memory) < batch_size:  # If has enough memory obtained, perform random batch sampling among those
             return
-
         batch = random.sample(self.memory, batch_size)  # Get a random batch
         for state, action, reward, state_next, done in batch:
             q_update = reward  # Reward obtained for a particular state, action pair
             if not done:
-
-                weights = self.model_CNN.predict(state_next[0])  # Getting weights from the CNN (input = image)
-                features = np.concatenate((weights, state[1], state[2]), axis=1)  # Adding holdings and volume to the weights before FC
-
                 # Obtain Q value based on immediate reward and predicted q* value of next state
-                q_update = reward + gamma * np.amax(self.model_FC.predict(features))
+                q_update = reward + gamma * np.amax(self.model.predict(state_next[0]))
 
-            weights = self.model_CNN.predict(state[0])  # Getting weights from the CNN (input = image)
-            features = np.concatenate((weights, state[1], state[2]), axis=1)  # Adding holdings and volume to the weights before FC
-
-            q_values = self.model_FC.predict(features)  # Obtain q value tuple for that state
+            q_values = self.model.predict(state[0])  # Obtain q value tuple for that state
             q_values[0][action] = q_update  # Update the q value for that state, action (one that we took)
             # Update the weights of the network based on the updated q value (based on immediate reward)
-            self.model_FC.fit(features, q_values, epochs=1, verbose=0)
+            self.model.fit(state[0], q_values, epochs=1, verbose=0)
 
         self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
         self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
