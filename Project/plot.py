@@ -5,9 +5,9 @@ def twodplot(steps, rewardsum, action, episode):
 
     plt.plot(steps, rewardsum, label='Episode {}'.format(episode))
     plt.legend(loc='upper right')
-    plt.xlabel('Steps')
+    plt.xlabel('Days')
     plt.ylabel('Cumulative Reward')
-    plt.title('Steps vs Cumulative reward')
+    plt.title('Days vs Cumulative reward')
 
     if episode == 1:
         f = open("action.txt", "w")

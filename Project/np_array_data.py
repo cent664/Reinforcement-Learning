@@ -5,9 +5,12 @@ import sys
 from PIL import Image
 np.set_printoptions(threshold=sys.maxsize)
 
-df = pd.read_csv("NFLX.csv")  # Reading the data
+def compute_array(mode, current_index, window_size, precision):
 
-def compute_array(current_index, window_size, precision):
+    if mode == 'train':
+        df = pd.read_csv("NFLX.csv")  # Reading the data
+    elif mode == 'test':
+        df = pd.read_csv("TSLA.csv")  # Reading the data
 
     # To store indexes for Low, Close, Open, High for 'window_size' number of days at current_index
     test_array = []
@@ -36,7 +39,8 @@ def reduce_dim(test_array):
     temp.sort()
     temp = np.trim_zeros(temp)
 
-    test_array = test_array / temp[0]
+    if len(temp) != 0:
+        test_array = test_array / temp[0]
     return test_array.astype(int)
 
 def make_graph(test_array):
@@ -57,17 +61,21 @@ def make_graph(test_array):
         if open > close:
             plt.bar(current_index - window_size + 1 + j, close - low, width=w, bottom=low, color='#be2409',
                     edgecolor='Black', linewidth=lw)
-            plt.bar(current_index - window_size + 1 + j, open - close, width=w, bottom=close, color='White',
+            plt.bar(current_index - window_size + 1 + j, open - close, width=w, bottom=close, color='Black',
                     edgecolor='Black', linewidth=lw)
             plt.bar(current_index - window_size + 1 + j, high - open, width=w, bottom=open, color='#fddc54',
                     edgecolor='Black', linewidth=lw)
         else:
             plt.bar(current_index - window_size + 1 + j, open - low, width=w, bottom=low, color='#be2409',
                     edgecolor='Black', linewidth=lw)
-            plt.bar(current_index - window_size + 1 + j, close - open, width=w, bottom=open, color='Black',
+            plt.bar(current_index - window_size + 1 + j, close - open, width=w, bottom=open, color='White',
                     edgecolor='Black', linewidth=lw)
             plt.bar(current_index - window_size + 1 + j, high - close, width=w, bottom=close, color='#fddc54',
                     edgecolor='Black', linewidth=lw)
+
+    plt.xlabel('Days')
+    plt.ylabel('Price Range')
+    plt.title('Day vs Price Range')
     plt.show()
 
 def coloring(test_array, static_image_size):
@@ -80,34 +88,43 @@ def coloring(test_array, static_image_size):
     final_array = np.ones(static_image_size) * 255
     # final_array = np.ones([rows, columns]) * 255
 
+    close_current = test_array[len(test_array) - 2][columns - 1]
+    shift = static_image_size[0]/2 - close_current
+
     # Filling in the colors in the final array similar to the graph
     for j in range(0, columns):
 
-        low = test_array[len(test_array) - 1][j]
-        close = test_array[len(test_array) - 2][j]
-        open = test_array[len(test_array) - 3][j]
-        high = test_array[len(test_array) - 4][j]
+        low = test_array[len(test_array) - 1][j] + int(shift)
+        close = test_array[len(test_array) - 2][j] + int(shift)
+        open = test_array[len(test_array) - 3][j] + int(shift)
+        high = test_array[len(test_array) - 4][j] + int(shift)
 
         if open > close:
 
             for i in range(low, close):
-                final_array[i][j] = 100
+                if i < static_image_size[0] and i >= 0:
+                    final_array[i][j] = 100
 
             for i in range(close, open):
-                final_array[i][j] = 200
+                if i < static_image_size[0] and i >= 0:
+                    final_array[i][j] = 50
 
             for i in range(open, high):
-                final_array[i][j] = 150
+                if i < static_image_size[0] and i >= 0:
+                   final_array[i][j] = 150
 
         else:
             for i in range(low, open):
-                final_array[i][j] = 100
+                if i < static_image_size[0] and i >= 0:
+                    final_array[i][j] = 100
 
             for i in range(open, close):
-                final_array[i][j] = 50
+                if i < static_image_size[0] and i >= 0:
+                    final_array[i][j] = 200
 
             for i in range(close, high):
-                final_array[i][j] = 150
+                if i < static_image_size[0] and i >= 0:
+                    final_array[i][j] = 150
 
     final_array = np.flip(final_array, axis=0)
     return(final_array)
@@ -138,7 +155,7 @@ def coloring_visual(test_array):
                 final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 100
 
             for i in range(close, open):
-                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 200
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 50
 
             for i in range(open, high):
                 final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 150
@@ -148,7 +165,7 @@ def coloring_visual(test_array):
                 final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 100
 
             for i in range(open, close):
-                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 50
+                final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 200
 
             for i in range(close, high):
                 final_array[i][(j + (j*127)):(j + ((j+1)*127))] = 150
@@ -174,17 +191,20 @@ if __name__ == '__main__':
 
     # Parameters
     current_index = 1500  # Index to get data from
-    window_size = 30  # Number of data points in the state
-    precision = 2  # Number of significant digits after the decimal
-    static_image_size = (1000, 40)  # Shape on input image into the CNN. Hard coded for now.
+    # current_index = 1500  # Index to get data from
+    window_size = 5  # Number of data points in the state
+    precision = 3  # Number of significant digits after the decimal. Lower values = Doesn't capture fine variations.
+    static_image_size = (512, 10)  # Shape on input image into the CNN.
+    mode = 'train'
 
-    # TODO: Test for lower precision instead of normalizing.
+    # TODO: Test for lower precision/longer image if too much data is going out of bounds.
+    # TODO: Test for precision combinations. Try and see if you can get the 256 lower
 
     # To compute a 2D array of low, close, open, high prices as indexes
-    test_array = compute_array(current_index, window_size, precision)
+    test_array = compute_array(mode, current_index, window_size, precision)
 
     # TODO: For now sacrificing accuracy to reduce size of the input image. Come up with a better representation later.
-    test_array = reduce_dim(test_array)
+    # test_array = reduce_dim(test_array)
     print(test_array)
     print(np.amax(test_array))
 
@@ -193,7 +213,6 @@ if __name__ == '__main__':
 
     # Creating the final colored 2D array representation of the graph
 
-    #TODO: Decide the input size. Bring current index to the center
     final_array = coloring(test_array, static_image_size)
     # final_array = coloring_visual(test_array)  # Uncomment for visualization of the state
     print((final_array).shape)

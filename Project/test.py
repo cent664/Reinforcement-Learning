@@ -37,7 +37,8 @@ def reduce_dim(test_array):
     temp.sort()
     temp = np.trim_zeros(temp)
 
-    test_array = test_array / temp[0]
+    if len(temp) != 0:
+        test_array = test_array / temp[0]
     return test_array.astype(int)
 
 def make_graph(test_array):
@@ -176,11 +177,11 @@ if __name__ == '__main__':
     # Parameters
     current_index = 4240  # Index to get data from
     window_size = 5  # Number of data points in the state
-    precision = 3  # Number of significant digits after the decimal
-    static_image_size = (3000, 84)  # Shape on input image into the CNN. Hard coded for now.
+    precision = 1  # Number of significant digits after the decimal
+    static_image_size = (1000, 5)  # Shape on input image into the CNN. Hard coded for now.
 
     max = 0
-    for i in range(4, current_index):
+    for i in range(window_size - 1, current_index):
         # TODO: Test for lower precision instead of normalizing.
 
         # To compute a 2D array of low, close, open, high prices as indexes
@@ -191,8 +192,9 @@ if __name__ == '__main__':
 
         if (np.amax(test_array) > max):
             max = np.amax(test_array)
+            arg_index = i
 
-    print(max)
+    print(arg_index, max)
 
     # To plot a stacked bar graph based on the test array for visualization
     # make_graph(test_array)

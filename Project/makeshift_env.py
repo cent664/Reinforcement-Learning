@@ -24,29 +24,34 @@ class StockTradingEnv():
 
     Reward:
         Difference in portfolio values = (p_current * h_current) - (p_old * h1_old)
+        Difference in portfolio values = (close_current * h_current) - (open_current * h_current)
 
     Starting Price:
         Adjusted Closing Price of the stock at the start of the time-series
     """
 
-    def __init__(self):
-        self.df = pd.read_csv("NFLX.csv")  # Reading the data
+    def __init__(self, mode):
+        if mode == 'test':
+            self.df = pd.read_csv("TSLA.csv")  # Reading the data
+        elif mode == 'train':
+            self.df = pd.read_csv("NFLX.csv")  # Reading the data
 
-        self.data_close = self.df['Adj Close'].values  #TODO: Change adjusted close to something else?
+        self.data_open = self.df['Open'].values
+        self.data_close = self.df['Close'].values
         self.data_volume = self.df['Volume'].values
 
-        self.index = 4  # Initial state index
-        self.holdings = 0  # Initial number of stocks I own
         self.window_size = 5  # Number of data points in the state
-        self.precision = 2  # Number of significant digits after the decimal
-        self.static_image_size = (1000, 40)  # Shape on input image into the CNN. Hard coded for now.
+        self.index = self.window_size - 1  # Initial state index
+        self.holdings = 0  # Initial number of stocks I own
+        self.precision = 1  # Number of significant digits after the decimal
+        self.static_image_size = (512, 40)  # Shape on input image into the CNN. Hard coded for now.
 
         self.action_space = 3
-        self.observation_space = (1, 1000, 40)
+        self.observation_space = (1, 512, 40)
 
-    def compute_im(self, current_price_index, window_size):
+    def compute_im(self, current_price_index, window_size, mode):
 
-        test_array = compute_array(current_price_index, window_size, self.precision)
+        test_array = compute_array(mode, current_price_index, window_size, self.precision)
         test_array = reduce_dim(test_array)
         im_data = coloring(test_array, self.static_image_size)
 
@@ -56,18 +61,21 @@ class StockTradingEnv():
 
         return im_data
 
-    def reset(self):
+    def reset(self, mode):
         # Compute the np array representation of the image at that index of size 'window_size'
-        im = self.compute_im(4, self.window_size)
+        self.index = self.window_size - 1
+        im = self.compute_im(self.index, self.window_size, mode)
 
-        # TODO: Expand volume and holdings
+        # TODO: Try removing volume/holdings
         # Volume at from starting index - 5 -> starting index
-        volume = [float(self.data_volume[0]), float(self.data_volume[1]), float(self.data_volume[2]), float(self.data_volume[3]), float(self.data_volume[4])]
+        volume = []
+        for i in range(0, self.window_size - 1):
+            volume.append(float(self.data_volume[i]))
         volume = np.reshape(volume, (1, -1))  # Reshaping along the right axis
         self.state = [im, np.asarray([[self.holdings]]), volume]
         return self.state
 
-    def step(self, action):
+    def step(self, action, mode):
         im, holdings, volume = self.state
 
         if (action == 0):  # Sell
@@ -79,18 +87,24 @@ class StockTradingEnv():
         if (action == 2):  # Buy
             new_holdings = holdings[0][0] + 1
 
-        # Reward is price (difference x holdings) for the Adjusted Closing Price
-        current_portfolio_value = (holdings[0][0]*float(self.data_close[self.index]))
-        new_portfolio_value = (new_holdings*float(self.data_close[self.index + 1]))
+        # Reward is (price difference x holdings) for the Adjusted Closing Price
+        # current_portfolio_value = (holdings[0][0]*float(self.data_close[self.index]))
+        # new_portfolio_value = (new_holdings*float(self.data_close[self.index + 1]))
+
+        # Reward is (price difference x holding_current) between open and close price
+        current_portfolio_value = (holdings[0][0] * float(self.data_open[self.index]))
+        new_portfolio_value = (holdings[0][0]*float(self.data_close[self.index]))
 
         reward = new_portfolio_value - current_portfolio_value
 
         self.index = self.index + 1  # Incrementing the window
 
         # Computing new image, volume array with respect to the new index
-        new_im = self.compute_im(self.index, self.window_size)
+        new_im = self.compute_im(self.index, self.window_size, mode)
 
-        new_volume = [float(self.data_volume[self.index-4]), float(self.data_volume[self.index-3]), float(self.data_volume[self.index-2]), float(self.data_volume[self.index-1]), float(self.data_volume[self.index])]
+        new_volume = []
+        for i in range(self.index - self.window_size + 1, self.index):
+            new_volume.append(float(self.data_volume[i]))
         new_volume = np.reshape(new_volume, (1, -1))
 
 
