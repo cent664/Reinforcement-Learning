@@ -9,3 +9,12 @@ Assignments and Project from Reinforcement Learning (6890)
 
 **Testing over 20 days**
 ![Testing Over 20 days](/Project/images/test.png)
+
+**Image Representation**
+![Image Representation](/Project/images/Figure_1_Edited.png)
+
+**Network**
+![Network](/Project/images/nn.svg)
+
+**Poster**
+![Poster](/Project/images/Capture.png)
