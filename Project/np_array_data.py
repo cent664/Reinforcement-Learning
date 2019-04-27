@@ -10,7 +10,7 @@ def compute_array(mode, current_index, window_size, precision):
     if mode == 'train':
         df = pd.read_csv("NFLX.csv")  # Reading the data
     elif mode == 'test':
-        df = pd.read_csv("TSLA.csv")  # Reading the data
+        df = pd.read_csv("NFLX_test.csv")  # Reading the data
 
     # To store indexes for Low, Close, Open, High for 'window_size' number of days at current_index
     test_array = []
@@ -174,7 +174,7 @@ def coloring_visual(test_array):
     return(final_array)
 
 def save_to_file(final_array):
-    f = open("test.txt", "w")
+    f = open("image.txt", "w")
 
     rows = len(final_array)
     columns = len(final_array[0])
@@ -222,5 +222,5 @@ if __name__ == '__main__':
 
     # Displaying the graph equivalent of my np array CNN fodder
     im = Image.fromarray(np.uint8(final_array), 'L')
-    im.save("gray.bmp")
+    im.save("image.bmp")
     im.show()

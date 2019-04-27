@@ -32,7 +32,7 @@ class StockTradingEnv():
 
     def __init__(self, mode):
         if mode == 'test':
-            self.df = pd.read_csv("TSLA.csv")  # Reading the data
+            self.df = pd.read_csv("NFLX_test.csv")  # Reading the data
         elif mode == 'train':
             self.df = pd.read_csv("NFLX.csv")  # Reading the data
 

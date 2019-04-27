@@ -167,6 +167,9 @@ def DQN_Agent():
 
     # ------------------------------------------------ TESTING ---------------------------------------------------------
 
+    test_episodes = 1
+    test_steps = 20
+
     print('\nTesting:\n')
     mode = 'test'
 
@@ -179,7 +182,7 @@ def DQN_Agent():
     score = [0]
 
     # Running for a number of episodes
-    while episode <= episodes:
+    while episode <= test_episodes:
 
         #  Resetting initial state, step size, cumulative reward and storing arrays at the start of each episode
         state = env.reset(mode)  # Get initial state
@@ -192,7 +195,7 @@ def DQN_Agent():
         emptyaction = []
 
         #  Going through time series data
-        while step <= steps:
+        while step <= test_steps:
             action = dqn_solver.act(state)  # Get action based on argmax of the Q value approximation from the NN
             state_next, reward, done, info = env.step(action, mode)
 
@@ -214,14 +217,14 @@ def DQN_Agent():
             emptyy.append(cumulative_reward)
             emptyaction.append(action_actual)
 
-            # print("{} {}ing: Holdings = {} Cumulative reward = {}".format(step, action_actual, state_next[1], cumulative_reward))
+            print("{} {}ing: Holdings = {} Cumulative reward = {}".format(step, action_actual, state_next[1], cumulative_reward))
 
             dqn_solver.remember(state, action, reward, state_next, done)  # Remember this instance
             state = state_next  # Update the state
 
             dqn_solver.experience_replay()  # Perform experience replay to update the network weights
 
-            if done or step == steps:
+            if done or step == test_steps:
                 score.append(cumulative_reward)
                 twodplot(emptyx, emptyy, emptyaction, episode)
                 break
@@ -238,7 +241,6 @@ if __name__ == "__main__":
 
 
 #TODO:
-# Labels on axis, captions on figures, reference figures
 # Deconv instead of concat
 # Find a way to use GPU
 # Reward structure
