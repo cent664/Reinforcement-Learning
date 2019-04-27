@@ -17,4 +17,4 @@ Assignments and Project from Reinforcement Learning (6890)
 ![Network](/Project/images/nn.svg)
 
 **Poster**
-![Poster](/Project/images/Capture.png)
+![Poster](/Project/images/Capture.PNG)
