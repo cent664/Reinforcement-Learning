@@ -36,12 +36,14 @@ class StockTradingEnv():
         elif mode == 'train':
             self.df = pd.read_csv("NFLX.csv")  # Reading the data
 
+        self.data_date = self.df['Date'].values
         self.data_open = self.df['Open'].values
         self.data_close = self.df['Close'].values
         self.data_volume = self.df['Volume'].values
 
         self.window_size = 5  # Number of data points in the state
         self.index = self.window_size - 1  # Initial state index
+        # TODO: Define long, short and hold. Is it the Holdings or the action (If you buy is it long and vice versa?)
         self.holdings = 0  # Initial number of stocks I own
         self.precision = 1  # Number of significant digits after the decimal
         self.static_image_size = (512, 40)  # Shape on input image into the CNN. Hard coded for now.
@@ -55,7 +57,6 @@ class StockTradingEnv():
         test_array = reduce_dim(test_array)
         im_data = coloring(test_array, self.static_image_size)
 
-        # Expanding from 2D to 4D since the CNN expects 4 dimensions
         im_data = np.expand_dims(im_data, axis=0)
         im_data = np.expand_dims(im_data, axis=0)
 
@@ -76,6 +77,7 @@ class StockTradingEnv():
         return self.state
 
     def step(self, action, mode):
+
         im, holdings, volume = self.state
 
         if (action == 0):  # Sell
@@ -88,14 +90,22 @@ class StockTradingEnv():
             new_holdings = holdings[0][0] + 1
 
         # Reward is (price difference x holdings) for the Adjusted Closing Price
-        # current_portfolio_value = (holdings[0][0]*float(self.data_close[self.index]))
-        # new_portfolio_value = (new_holdings*float(self.data_close[self.index + 1]))
+        current_portfolio_value = (holdings[0][0]*float(self.data_close[self.index]))
+        new_portfolio_value = (new_holdings*float(self.data_close[self.index + 1]))
 
         # Reward is (price difference x holding_current) between open and close price
-        current_portfolio_value = (holdings[0][0] * float(self.data_open[self.index]))
-        new_portfolio_value = (holdings[0][0]*float(self.data_close[self.index]))
+        # current_portfolio_value = (holdings[0][0] * float(self.data_open[self.index]))
+        # new_portfolio_value = (holdings[0][0]*float(self.data_close[self.index]))
 
         reward = new_portfolio_value - current_portfolio_value
+
+        # Saving the image
+        if mode == 'test':
+            actual_image = im[0][0]
+            date = self.data_date[self.index]
+            date = date.replace("/", "-")
+            actual_image = Image.fromarray(np.uint8(actual_image), 'L')
+            actual_image.save("Images/{}-{}-{}.bmp".format(action, str(round(reward,2)), date))
 
         self.index = self.index + 1  # Incrementing the window
 

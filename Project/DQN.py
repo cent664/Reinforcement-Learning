@@ -103,6 +103,7 @@ def DQN_Agent():
     # Get action and observation space
     observation_space = env.observation_space
     action_space = env.action_space
+    window_size = env.window_size
 
     # Object for the solver
     dqn_solver = DQNSolver(observation_space, action_space)
@@ -119,9 +120,11 @@ def DQN_Agent():
         cumulative_reward = 0
 
         # To append step, cumulative reward, corresponding action to plot for each episode
-        emptyx = []
-        emptyy = []
-        emptyaction = []
+        step_x = []
+        cumulative_reward_y1 = []
+        rewards_y2 = []
+        actions_taken = []
+        holdings = []
 
         #  Going through time series data
         while step <= steps:
@@ -142,11 +145,13 @@ def DQN_Agent():
             if action == 2:
                 action_actual = 'Buy'
 
-            emptyx.append(step)
-            emptyy.append(cumulative_reward)
-            emptyaction.append(action_actual)
+            step_x.append(step)
+            cumulative_reward_y1.append(cumulative_reward)
+            rewards_y2.append(reward)
+            actions_taken.append(action)
+            holdings.append(state_next[1][0][0])
 
-            # print("{} {}ing: Holdings = {} Cumulative reward = {}".format(step, action_actual, state_next[1], cumulative_reward))
+            # print("{} {}ing: Holdings = {} Reward = {} Cumulative reward = {}".format(step, action_actual, state_next[1], reward, cumulative_reward))
 
             dqn_solver.remember(state, action, reward, state_next, done)  # Remember this instance
             state = state_next  # Update the state
@@ -155,7 +160,7 @@ def DQN_Agent():
 
             if done or step == steps:
                 score.append(cumulative_reward)
-                twodplot(emptyx, emptyy, emptyaction, episode)
+                twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, holdings, episode, window_size, mode)
                 break
             else:
                 step += 1
@@ -190,9 +195,11 @@ def DQN_Agent():
         cumulative_reward = 0
 
         # To append step, cumulative reward, corresponding action to plot for each episode
-        emptyx = []
-        emptyy = []
-        emptyaction = []
+        step_x = []
+        cumulative_reward_y1 = []
+        rewards_y2 = []
+        actions_taken = []
+        holdings = []
 
         #  Going through time series data
         while step <= test_steps:
@@ -213,11 +220,13 @@ def DQN_Agent():
             if action == 2:
                 action_actual = 'Buy'
 
-            emptyx.append(step)
-            emptyy.append(cumulative_reward)
-            emptyaction.append(action_actual)
+            step_x.append(step)
+            cumulative_reward_y1.append(cumulative_reward)
+            rewards_y2.append(reward)
+            actions_taken.append(action)
+            holdings.append(state_next[1][0][0])
 
-            print("{} {}ing: Holdings = {} Cumulative reward = {}".format(step, action_actual, state_next[1], cumulative_reward))
+            print("{} {}ing: Holdings = {} Reward = {} Cumulative reward = {}".format(step, action_actual, state_next[1], reward, cumulative_reward))
 
             dqn_solver.remember(state, action, reward, state_next, done)  # Remember this instance
             state = state_next  # Update the state
@@ -226,7 +235,7 @@ def DQN_Agent():
 
             if done or step == test_steps:
                 score.append(cumulative_reward)
-                twodplot(emptyx, emptyy, emptyaction, episode)
+                twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, holdings, episode, window_size, mode)
                 break
             else:
                 step += 1
@@ -248,3 +257,4 @@ if __name__ == "__main__":
 # Include week, month, more months image sets
 # Upload env to gym
 # MAIN: Test reward structure, different image sizes/precision, volume and holdings or not
+# Clean redundant variavles and calls

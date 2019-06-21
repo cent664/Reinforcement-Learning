@@ -43,7 +43,7 @@ def reduce_dim(test_array):
         test_array = test_array / temp[0]
     return test_array.astype(int)
 
-def make_graph(test_array):
+def make_graph(test_array, current_index, window_size):
 
     # Graph drawing parameters
     w = 1.0
@@ -76,7 +76,6 @@ def make_graph(test_array):
     plt.xlabel('Days')
     plt.ylabel('Price Range')
     plt.title('Day vs Price Range')
-    plt.show()
 
 def coloring(test_array, static_image_size):
 
@@ -194,7 +193,7 @@ if __name__ == '__main__':
     # current_index = 1500  # Index to get data from
     window_size = 5  # Number of data points in the state
     precision = 3  # Number of significant digits after the decimal. Lower values = Doesn't capture fine variations.
-    static_image_size = (512, 10)  # Shape on input image into the CNN.
+    static_image_size = (512, 5)  # Shape on input image into the CNN.
     mode = 'train'
 
     # TODO: Test for lower precision/longer image if too much data is going out of bounds.
@@ -209,18 +208,21 @@ if __name__ == '__main__':
     print(np.amax(test_array))
 
     # To plot a stacked bar graph based on the test array for visualization
-    make_graph(test_array)
+    make_graph(test_array, current_index, window_size)
+    plt.show()
 
     # Creating the final colored 2D array representation of the graph
-
     final_array = coloring(test_array, static_image_size)
     # final_array = coloring_visual(test_array)  # Uncomment for visualization of the state
     print((final_array).shape)
 
     # To check if I've got the pixel values correctly
     save_to_file(final_array)
+    date = '12.12.2016'
+    reward = 5.26
+    action = 'Sell'
 
     # Displaying the graph equivalent of my np array CNN fodder
     im = Image.fromarray(np.uint8(final_array), 'L')
-    im.save("image.bmp")
+    im.save("Images/{}-{}-{}.bmp".format(action, str(reward), date))
     im.show()
