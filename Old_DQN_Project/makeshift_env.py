@@ -39,7 +39,6 @@ class StockTradingEnv():
 
         self.window_size = 16  # Number of data points in the state
         self.index = self.window_size - 1  # Initial state index
-        # TODO: Define long, short and hold. Is it the Holdings or the action (If you buy is it long and vice versa?)
         self.precision = 1  # Number of significant digits after the decimal
         self.static_image_size = (64, self.window_size)  # Shape on input image into the CNN. Hard coded for now.
 
@@ -94,7 +93,13 @@ class StockTradingEnv():
             date = self.data_date[self.index]
             date = date.replace("/", "-")
             actual_image = Image.fromarray(np.uint8(actual_image), 'L')
-            actual_image.save("Images/{}-{}-{}.bmp".format(action, str(round(reward,2)), date))
+            if action == 0:
+                action_actual = 'Sell'
+            if action == 1:
+                action_actual = 'Hold'
+            if action == 2:
+                action_actual = 'Buy'
+            actual_image.save("Images/{}ing-{}-{}.bmp".format(action_actual, date, str(round(reward,2))))
 
         self.index = self.index + 1  # Incrementing the window
 

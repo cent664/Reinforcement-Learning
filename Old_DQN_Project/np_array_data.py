@@ -33,9 +33,11 @@ def reduce_dim(test_array):
     temp = temp.flatten()
     temp.sort()
     temp = np.trim_zeros(temp)
+    dollars_per_pixel = temp[0]
+    scaling_factor = dollars_per_pixel
 
     if len(temp) != 0:
-        test_array = test_array / temp[0]
+        test_array = test_array * scaling_factor
     return test_array.astype(int)
 
 def make_graph(test_array, current_index, window_size):
@@ -82,7 +84,7 @@ def coloring(test_array, static_image_size):
     final_array = np.ones(static_image_size) * 255
     # final_array = np.ones([rows, columns]) * 255
 
-    close_current = test_array[len(test_array) - 2][columns - 1] #TODO: Comment this
+    close_current = test_array[len(test_array) - 2][columns - 1]  # TODO: Comment this
     shift = static_image_size[0]/2 - close_current
 
     # Filling in the colors in the final array similar to the graph
@@ -97,28 +99,28 @@ def coloring(test_array, static_image_size):
 
             for i in range(low, close):
                 if i < static_image_size[0] and i >= 0:
-                    final_array[i][j] = 100
+                    final_array[i][j] = 40
 
             for i in range(close, open):
                 if i < static_image_size[0] and i >= 0:
-                    final_array[i][j] = 50
+                    final_array[i][j] = 10
 
             for i in range(open, high):
                 if i < static_image_size[0] and i >= 0:
-                   final_array[i][j] = 150
+                   final_array[i][j] = 100
 
         else:
             for i in range(low, open):
                 if i < static_image_size[0] and i >= 0:
-                    final_array[i][j] = 100
+                    final_array[i][j] = 40
 
             for i in range(open, close):
                 if i < static_image_size[0] and i >= 0:
-                    final_array[i][j] = 200
+                    final_array[i][j] = 150
 
             for i in range(close, high):
                 if i < static_image_size[0] and i >= 0:
-                    final_array[i][j] = 150
+                    final_array[i][j] = 100
 
     final_array = np.flip(final_array, axis=0)
     return(final_array)
@@ -182,20 +184,20 @@ def save_to_file(final_array):
 
 if __name__ == '__main__':
 
+    df = pd.read_csv("NFLX.csv")
 
     # Parameters
     current_index = 1500  # Index to get data from
-    # current_index = 1500  # Index to get data from
     window_size = 5  # Number of data points in the state
-    precision = 3  # Number of significant digits after the decimal. Lower values = Doesn't capture fine variations.
-    static_image_size = (512, 5)  # Shape on input image into the CNN.
+    precision = 6  # Number of significant digits after the decimal. Lower values = Doesn't capture fine variations.
+    static_image_size = (64, 5)  # Shape on input image into the CNN.
     mode = 'train'
 
     # TODO: Test for lower precision/longer image if too much data is going out of bounds.
     # TODO: Test for precision combinations. Try and see if you can get the 256 lower
 
     # To compute a 2D array of low, close, open, high prices as indexes
-    test_array = compute_array(mode, current_index, window_size, precision)
+    test_array = compute_array(df, mode, current_index, window_size, precision)
 
     # TODO: For now sacrificing accuracy to reduce size of the input image. Come up with a better representation later.
     # test_array = reduce_dim(test_array)
@@ -219,5 +221,5 @@ if __name__ == '__main__':
 
     # Displaying the graph equivalent of my np array CNN fodder
     im = Image.fromarray(np.uint8(final_array), 'L')
-    im.save("Images/{}-{}-{}.bmp".format(action, str(reward), date))
+    im.save("Images/{}ing-{}-{}.bmp".format(action, date, str(reward)))
     im.show()

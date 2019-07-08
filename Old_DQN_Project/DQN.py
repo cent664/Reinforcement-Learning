@@ -34,7 +34,6 @@ class DQNSolver:
         self.memory = deque(maxlen=memory_size)  # Will forget old values as new ones are appended
 
         # Defining the network structure
-        # TODO: Check filter numbers and size. Check the negative subtraction error
         self.model = Sequential()
         self.model.add(Conv2D(32, 8, strides=(1, 1), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
         self.model.add(Conv2D(64, 4, strides=(1, 1), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
@@ -45,10 +44,10 @@ class DQNSolver:
         self.model.compile(loss="mean_squared_error", optimizer=RMSprop(lr=learning_rate, rho=0.95, epsilon=0.01), metrics=["accuracy"])
 
         if mode == 'test':
-            # TODO: Load weights here
+            # Loading weights here
             print('Loading weights')
             self.exploration_rate = 0
-            self.model.load_weights('CNN_DQN_weights_new.h5', by_name=True)
+            self.model.load_weights('CNN_DQN_weights.h5', by_name=True)
 
     def remember(self, state, action, reward, next_state):
         self.memory.append((state, action, reward, next_state))  # Remembering instances in memory for future use
@@ -153,7 +152,7 @@ def DQN_Agent(mode):
                 else:
                     step += 1
 
-            print("Episode: {}. Score : {}".format(episode, score[episode]))
+            print("Episode: {}. Net Reward : {}".format(episode, score[episode]))
             episode += 1
 
         plt.show()
@@ -229,14 +228,11 @@ def DQN_Agent(mode):
         plt.show()
 
 if __name__ == "__main__":
-    mode = 'train'
+    mode = 'test'
     DQN_Agent(mode)
 
 
 #TODO:
-# Deconv instead of concat
-# Find a way to use GPU
-# Reward structure
 # Batches
 # Include week, month, more months image sets
 # Upload env to gym

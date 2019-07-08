@@ -31,10 +31,10 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
         data_open = np.asarray(data_open)
         price_o = data_open[window_size - 1: window_size + len(steps) - 1]
 
-        color = []
+        color = ['yellow']  # Setting the initial position to hold
 
-        position = action  # TODO: action or holdings?
-        for i in range(0, len(steps)):
+        position = action
+        for i in range(0, len(steps) - 1):  # Discarding last entry
             if position[i] == 0:  # Sell
                 color.append('red')
             if position[i] == 1:  # Hold
@@ -54,9 +54,11 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
         plt.title('Testing: Position at each day')
         # plt.show()
 
+        rewards = rewards[0: len(steps) - 1]
+        rewards.insert(0, 0)
         # Plotting the Immediate reward
         plt.subplot(2, 1, 2)
-        plt.step(steps, rewards, label='Immediate Reward')
+        plt.plot(steps, rewards, label='Immediate Reward') # Step
         plt.legend(loc='upper right')
         plt.xlabel('Days')
         plt.ylabel('Immediate Reward')
