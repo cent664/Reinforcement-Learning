@@ -92,7 +92,7 @@ def DQN_Agent(mode):
         print('\nTraining:\n')
 
         # DQN Stocks
-        env = StockTradingEnv(mode)  # Object of the environment
+        env = StockTradingEnv(mode, steps)  # Object of the environment
 
         # Get action and observation space
         observation_space = env.observation_space
@@ -165,7 +165,7 @@ def DQN_Agent(mode):
         print('\nTesting:\n')
 
         # DQN Stocks
-        env = StockTradingEnv(mode)  # Resetting the environment
+        env = StockTradingEnv(mode, test_steps)  # Resetting the environment
 
         # Get action and observation space
         observation_space = env.observation_space
@@ -228,7 +228,7 @@ def DQN_Agent(mode):
         plt.show()
 
 if __name__ == "__main__":
-    mode = 'test'
+    mode = 'train'
     DQN_Agent(mode)
 
 

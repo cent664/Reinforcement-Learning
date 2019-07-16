@@ -27,33 +27,37 @@ class StockTradingEnv():
         Adjusted Closing Price of the stock at the start of the time-series
     """
 
-    def __init__(self, mode):
+    def __init__(self, mode, steps):
         if mode == 'test':
-            self.df = pd.read_csv("NFLX_test.csv")  # Reading the data
+            self.df = pd.read_csv("S&P500_test.csv")  # Reading the data
         elif mode == 'train':
-            self.df = pd.read_csv("NFLX.csv")  # Reading the data
+            self.df = pd.read_csv("S&P500_train.csv")  # Reading the data
 
         self.data_date = self.df['Date'].values
         self.data_open = self.df['Open'].values
         self.data_close = self.df['Close'].values
+        self.data_low = self.df['Low'].values
+        self.data_high = self.df['High'].values
 
         self.window_size = 16  # Number of data points in the state
         self.index = self.window_size - 1  # Initial state index
-        self.precision = 1  # Number of significant digits after the decimal
         self.static_image_size = (64, self.window_size)  # Shape on input image into the CNN. Hard coded for now.
 
         self.action_space = 3
         self.observation_space = (1, 64, self.window_size)
 
-    def compute_im(self, current_price_index, window_size, mode):
+        # Calculating Scaling factor
+        maxRange = -1000000
+        for i in range(0, steps):
+            maxRange = max(maxRange, max(self.data_high[i:i + self.window_size]) - min(self.data_low[i:i + self.window_size]))
 
-        if mode == 'train':
-            df = pd.read_csv("NFLX.csv")  # Reading the data
-        elif mode == 'test':
-            df = pd.read_csv("NFLX_test.csv")  # Reading the data
+        self.dollars_per_pixel = 64/maxRange
+        self.scaling_factor = 1 / self.dollars_per_pixel
 
-        test_array = compute_array(df, mode, current_price_index, window_size, self.precision)
-        test_array = reduce_dim(test_array)
+    def compute_im(self, current_price_index, window_size):
+
+        test_array = compute_array(self.df, current_price_index, window_size)
+        test_array = reduce_dim(test_array, self.scaling_factor)
         im_data = coloring(test_array, self.static_image_size)
 
         im_data = np.expand_dims(im_data, axis=0)
@@ -65,7 +69,7 @@ class StockTradingEnv():
 
         # Compute the np array representation of the image at that index of size 'window_size'
         self.index = self.window_size - 1
-        im = self.compute_im(self.index, self.window_size, mode)
+        im = self.compute_im(self.index, self.window_size)
         self.state = im
 
         return self.state
@@ -104,7 +108,7 @@ class StockTradingEnv():
         self.index = self.index + 1  # Incrementing the window
 
         # Computing new image, volume array with respect to the new index
-        new_im = self.compute_im(self.index, self.window_size, mode)
+        new_im = self.compute_im(self.index, self.window_size)
 
         self.state = new_im
         return self.state, reward, {}
