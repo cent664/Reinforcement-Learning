@@ -25,6 +25,7 @@ exploration_decay = 0.995  # Exploration rate decay rate
 episodes = 10
 steps = 252
 
+
 class DQNSolver:
 
     def __init__(self, observation_space, action_space, mode):
@@ -84,6 +85,7 @@ class DQNSolver:
 
         self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
         self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
+
 
 def DQN_Agent(mode):
 
@@ -227,8 +229,9 @@ def DQN_Agent(mode):
 
         plt.show()
 
+
 if __name__ == "__main__":
-    mode = 'train'
+    mode = 'test'
     DQN_Agent(mode)
 
 

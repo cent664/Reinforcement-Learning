@@ -7,6 +7,7 @@ import pandas as pd
 from PIL import Image
 from np_array_data import compute_array, reduce_dim, coloring
 
+
 class StockTradingEnv():
     """
     Description:
@@ -33,7 +34,11 @@ class StockTradingEnv():
         elif mode == 'train':
             self.df = pd.read_csv("S&P500_train.csv")  # Reading the data
 
-        self.data_date = self.df['Date'].values
+        # Converting String to datetime
+        self.data_date = self.df['Date']
+        self.data_date = pd.to_datetime(self.data_date)
+        self.data_date = self.data_date.dt.date
+
         self.data_open = self.df['Open'].values
         self.data_close = self.df['Close'].values
         self.data_low = self.df['Low'].values
@@ -51,8 +56,9 @@ class StockTradingEnv():
         for i in range(0, steps):
             maxRange = max(maxRange, max(self.data_high[i:i + self.window_size]) - min(self.data_low[i:i + self.window_size]))
 
-        self.dollars_per_pixel = 64/maxRange
+        self.dollars_per_pixel = maxRange/64
         self.scaling_factor = 1 / self.dollars_per_pixel
+        self.scaling_factor = self.scaling_factor / 2  # To account for the shift from centering close
 
     def compute_im(self, current_price_index, window_size):
 
@@ -95,7 +101,6 @@ class StockTradingEnv():
         if mode == 'test':
             actual_image = im[0][0]
             date = self.data_date[self.index]
-            date = date.replace("/", "-")
             actual_image = Image.fromarray(np.uint8(actual_image), 'L')
             if action == 0:
                 action_actual = 'Sell'
@@ -103,7 +108,8 @@ class StockTradingEnv():
                 action_actual = 'Hold'
             if action == 2:
                 action_actual = 'Buy'
-            actual_image.save("Images/{}ing-{}-{}.bmp".format(action_actual, date, str(round(reward,2))))
+
+            actual_image.save("Images/{}-{}ing-{}.bmp".format(date, action_actual, str(round(reward,2))))
 
         self.index = self.index + 1  # Incrementing the window
 
