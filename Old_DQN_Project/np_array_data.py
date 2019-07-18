@@ -156,9 +156,9 @@ def save_to_file(final_array):
 if __name__ == '__main__':  # To run tests, is not accessed during main function call
 
     # Parameters
-    current_index = 4  # Index to get data from
-    window_size = 5  # Number of data points in the state
-    static_image_size = (64, 5)  # Shape on input image into the CNN.
+    current_index = 33  # Index to get data from
+    window_size = 34  # Number of data points in the state
+    static_image_size = (64, 34)  # Shape on input image into the CNN.
     mode = 'test'
 
     if mode == 'train':
@@ -177,6 +177,13 @@ if __name__ == '__main__':  # To run tests, is not accessed during main function
     # To compute a 2D array of low, close, open, high prices as indexes
     test_array = compute_array(df, current_index, window_size)
 
+    test_array = reduce_dim(test_array, 1)
+    print(test_array)
+
+    # To plot a stacked bar graph based on the test array for visualization
+    make_graph(test_array, current_index, window_size)
+    plt.show()
+
     # Calculating Dollars per pixel based on max range
     maxRange = -1000000
     for i in range(0, steps):
@@ -192,10 +199,6 @@ if __name__ == '__main__':  # To run tests, is not accessed during main function
 
     test_array = reduce_dim(test_array, scaling_factor)
     print(test_array)
-
-    # To plot a stacked bar graph based on the test array for visualization
-    make_graph(test_array, current_index, window_size)
-    # plt.show()
 
     # Creating the final colored 2D array representation of the graph
     final_array = coloring(test_array, static_image_size)
