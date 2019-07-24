@@ -48,7 +48,7 @@ class DQNSolver:
             # Loading weights here
             print('Loading weights')
             self.exploration_rate = 0
-            self.model.load_weights('CNN_DQN_weights_newpc.h5', by_name=True)
+            self.model.load_weights('CNN_DQN_weights.h5', by_name=True)
 
     def remember(self, state, action, reward, next_state):
         self.memory.append((state, action, reward, next_state))  # Remembering instances in memory for future use
@@ -69,8 +69,6 @@ class DQNSolver:
 
         batch = random.sample(self.memory, batch_size)  # Get a random batch
         for state, action, reward, state_next in batch:
-            # q_values_next = self.model.predict(state_next)
-            # q_update = reward + gamma * np.amax(self.model.predict(q_values_next))
 
             # Obtain Q value based on immediate reward and predicted q* value of next state
             q_update = reward + gamma * np.amax(self.model.predict(state_next))
@@ -81,7 +79,7 @@ class DQNSolver:
             self.model.fit(state, q_values, epochs=1, verbose=0)
 
         # Saving the weights
-        self.model.save_weights('CNN_DQN_weights_newpc.h5')
+        self.model.save_weights('CNN_DQN_weights.h5')
 
         self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
         self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
@@ -231,7 +229,7 @@ def DQN_Agent(mode):
 
 
 if __name__ == "__main__":
-    mode = 'train'
+    mode = 'test'
     DQN_Agent(mode)
 
 

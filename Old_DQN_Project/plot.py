@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-
+from mpl_finance import candlestick_ohlc
+import matplotlib.ticker as mticker
+import matplotlib.dates as mdates
 
 # To plot the steps vs cumulative reward
 def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
@@ -23,7 +25,7 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
         plt.show()
 
         # Getting close and open prices
-        df = pd.read_csv("NFLX_test.csv")
+        df = pd.read_csv("S&P500_test.csv")
         data_close = df['Close'].values
         data_close = np.asarray(data_close)
         price_c = data_close[window_size - 1: window_size + len(steps) - 1]
@@ -51,9 +53,8 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
 
         plt.legend(loc='upper right')
         plt.xlabel('Days')
-        plt.ylabel('Close and Open Prices')
+        plt.ylabel('Close and Open Prices ($)')
         plt.title('Testing: Position at each day')
-        # plt.show()
 
         rewards = rewards[0: len(steps) - 1]
         rewards.insert(0, 0)
@@ -62,7 +63,7 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
         plt.plot(steps, rewards, label='Immediate Reward') # Step
         plt.legend(loc='upper right')
         plt.xlabel('Days')
-        plt.ylabel('Immediate Reward')
+        plt.ylabel('Immediate Reward ($)')
         plt.title('Testing: Days vs Immediate Reward - Window size {}'.format(window_size))
         plt.grid(True)
 
