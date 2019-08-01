@@ -20,8 +20,11 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
 
     if mode == 'test':
 
-        # CUMULATIVE REWARD
-        plt.subplot(4, 1, 1)
+        # ------------------------------------------ 1. CUMULATIVE REWARD ------------------------------------------
+
+        fig = plt.figure()
+
+        ax1 = plt.subplot2grid((4, 1), (0, 0))
         plt.plot(steps, rewardsum)
         # plt.xlabel('Days')
         plt.ylabel('Cumulative Reward ($)')
@@ -32,13 +35,16 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
             top=False,  # ticks along the top edge are off
             labelbottom=False)  # labels along the bottom edge are off
         plt.title('Days vs Cumulative Reward - Window size {}'.format(window_size))
+        plt.scatter(steps, rewardsum, s=50)
+        ax1.xaxis.set_major_locator(mticker.MaxNLocator(len(steps) + 3))
         plt.grid(True)
 
         rewards = rewards[0: len(steps) - 1]
         rewards.insert(0, 0)
 
-        # IMMEDIATE REWARD
-        plt.subplot(4, 1, 2)
+        # ------------------------------------------ 2. IMMEDIATE REWARD ------------------------------------------
+
+        ax2 = plt.subplot2grid((4, 1), (1, 0))
         plt.plot(steps, rewards, label='Immediate Reward')  # Step
         plt.legend(loc='upper right')
         # plt.xlabel('Days')
@@ -50,7 +56,11 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
             top=False,  # ticks along the top edge are off
             labelbottom=False)  # labels along the bottom edge are off
         plt.title('Days vs Immediate Reward - Window size {}'.format(window_size))
+        plt.scatter(steps, rewards, s=50)
+        ax2.xaxis.set_major_locator(mticker.MaxNLocator(len(steps) + 3))
         plt.grid(True)
+
+        # ------------------------------------------ 3. STOCK PRICES ------------------------------------------
 
         # Getting close and open prices
         df = pd.read_csv("S&P500_test.csv")
@@ -73,11 +83,11 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
             if position[i] == 2:  # Buy
                 color.append('blue')
 
-        # STOCK PRICES
-        plt.subplot(4, 1, 3)
+        ax3 = plt.subplot2grid((4, 1), (2, 0))
         plt.plot(steps, price_c, label='Close price')
         plt.plot(steps, price_o, label='Open price')
         plt.scatter(steps, price_o, c=color, s=50)
+        ax3.xaxis.set_major_locator(mticker.MaxNLocator(len(steps) + 3))
         plt.grid(True)
 
         plt.legend(loc='upper right')
@@ -91,10 +101,57 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
             top=False,  # ticks along the top edge are off
             labelbottom=False)  # labels along the bottom edge are off
 
-        plt.subplot(4, 1, 4)
-        # candle()
+        # ------------------------------------------ 4. CANDLESTICKS ------------------------------------------
 
-        # Writing down the actions taken
+        start = window_size - 1
+
+        # Converting date to pandas datetime format
+        df['Date'] = pd.to_datetime(df['Date'])
+        og_dates = []
+
+        # Converting datetime objects to the correct date format
+        for i in range(0, len(df['Date'])):
+            og_dates.append(df['Date'][i].strftime('%d-%m-%Y'))
+
+        df["Date"] = df["Date"].apply(mdates.date2num)
+
+        # Creating required data in new DataFrame OHLC
+        ohlc = df[['Date', 'Open', 'High', 'Low', 'Close']]
+
+        # In case you want to check for shorter timespan
+        ohlc = ohlc[start: start + len(steps)]
+        ohlc = ohlc.values
+        ohlc = ohlc.tolist()
+
+        # Replacing x axis values with consecutive dates to eliminate gaps
+        for i in range(0, len(steps)):
+            ohlc[i][0] = ohlc[0][0] + i
+            ohlc[i] = tuple(ohlc[i])
+
+        ax4 = plt.subplot2grid((4, 1), (3, 0))
+
+        # Plot the candlesticks
+        candlestick_ohlc(ax4, ohlc, width=.6)
+
+        for label in ax4.xaxis.get_ticklabels():
+            label.set_rotation(45)
+
+        ax4.xaxis.set_major_formatter(mdates.DateFormatter('%d-%m-%Y'))
+        ax4.xaxis.set_major_locator(mticker.MaxNLocator(len(steps) + 3))
+        ax4.grid(True)
+
+        plt.xlabel('Date')
+        plt.ylabel('Price ($)')
+        plt.title('S&P500')
+
+        # Replacing x labels with the correct dates
+        locs, labels = plt.xticks()
+        locs = locs[1:]
+        plt.xticks(locs, list(og_dates[start - 1: start + len(steps) + 1]))
+        plt.subplots_adjust(left=0.09, bottom=0.20, right=0.94, top=0.90, wspace=0.2, hspace=0)
+
+        # ------------------------------------------ SAVING THE ACTIONS ------------------------------------------
+
         if episode == 1:
             f = open("action.txt", "w")
         else:

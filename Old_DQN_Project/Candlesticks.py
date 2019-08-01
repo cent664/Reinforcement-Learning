@@ -45,7 +45,7 @@ def candle():
         label.set_rotation(45)
 
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%d-%m-%Y'))
-    ax.xaxis.set_major_locator(mticker.MaxNLocator(25))
+    ax.xaxis.set_major_locator(mticker.MaxNLocator(steps + 3))
     ax.grid(True)
 
     plt.xlabel('Date')
@@ -53,10 +53,10 @@ def candle():
     plt.title('S&P500')
 
     # Replacing x labels with the correct dates
-    locs, labels = plt.xticks()
-    plt.xticks(locs, list(og_dates[start - 2: start + steps + 2]))
+    # locs, labels = plt.xticks()
+    # plt.xticks(locs, list(og_dates[start - 2: start + steps + 2]))
     plt.subplots_adjust(left=0.09, bottom=0.20, right=0.94, top=0.90, wspace=0.2, hspace=0)
+    plt.show()
 
 if __name__ == '__main__':
     candle()
-    plt.show()
