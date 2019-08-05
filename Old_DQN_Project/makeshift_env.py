@@ -8,7 +8,7 @@ from PIL import Image
 from np_array_data import compute_array, reduce_dim, coloring
 
 
-class StockTradingEnv():
+class StockTradingEnv:
     """
     Description:
     State:

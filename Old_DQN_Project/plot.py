@@ -11,6 +11,9 @@ from Candlesticks import candle
 def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
 
     if mode == 'train':
+
+        df = pd.read_csv("S&P500_train.csv")
+        # start_date = df
         # Plotting cumulative reward
         plt.plot(steps, rewardsum, label='Episode {}'.format(episode))
         plt.legend(loc='upper right')
@@ -19,6 +22,8 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
         plt.title('Training: Days vs Cumulative Reward - Window size {}'.format(window_size))
 
     if mode == 'test':
+
+        df = pd.read_csv("S&P500_test.csv")
 
         # ------------------------------------------ 1. CUMULATIVE REWARD ------------------------------------------
 
@@ -63,19 +68,18 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
         # ------------------------------------------ 3. STOCK PRICES ------------------------------------------
 
         # Getting close and open prices
-        df = pd.read_csv("S&P500_test.csv")
         data_close = df['Close'].values
         data_close = np.asarray(data_close)
-        price_c = data_close[window_size - 1: window_size + len(steps) - 1]
+        price_c = data_close[window_size: window_size + len(steps)]
 
         data_open = df['Open'].values
         data_open = np.asarray(data_open)
-        price_o = data_open[window_size - 1: window_size + len(steps) - 1]
+        price_o = data_open[window_size: window_size + len(steps)]
 
-        color = ['yellow']  # Setting the initial position to hold
+        color = []
 
         position = action
-        for i in range(0, len(steps) - 1):  # Discarding last entry
+        for i in range(0, len(steps)):
             if position[i] == 0:  # Sell
                 color.append('red')
             if position[i] == 1:  # Hold
@@ -103,7 +107,7 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
 
         # ------------------------------------------ 4. CANDLESTICKS ------------------------------------------
 
-        start = window_size - 1
+        start = window_size
 
         # Converting date to pandas datetime format
         df['Date'] = pd.to_datetime(df['Date'])
@@ -153,12 +157,17 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
         # ------------------------------------------ SAVING THE ACTIONS ------------------------------------------
 
         if episode == 1:
-            f = open("action.txt", "w")
+            f = open("actions_taken.txt", "w")
         else:
-            f = open("action.txt", "a")
+            f = open("actions_taken.txt", "a")
 
         f.write("Episode = {}.\n\n".format(episode))
 
         for i in range(0, len(steps)):
-            f.write("Step = {}. Action = {}\n".format(steps[i], action[i]))
+            if action[i] == 0:
+                f.write("Step = {}. Selling. Immediate Reward = {}\n".format(steps[i], rewards[i]))
+            if action[i] == 1:
+                f.write("Step = {}. Holding. Immediate Reward = {}\n".format(steps[i], rewards[i]))
+            if action[i] == 2:
+                f.write("Step = {}. Buying. Immediate Reward = {}\n".format(steps[i], rewards[i]))
         f.write("\n")
