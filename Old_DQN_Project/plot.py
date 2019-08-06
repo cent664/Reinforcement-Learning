@@ -24,7 +24,6 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
     if mode == 'test':
 
         df = pd.read_csv("S&P500_test.csv")
-
         # ------------------------------------------ 1. CUMULATIVE REWARD ------------------------------------------
 
         fig = plt.figure()
@@ -44,8 +43,8 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
         ax1.xaxis.set_major_locator(mticker.MaxNLocator(len(steps) + 3))
         plt.grid(True)
 
-        rewards = rewards[0: len(steps) - 1]
-        rewards.insert(0, 0)
+        # rewards = rewards[0: len(steps) - 1]
+        # rewards.insert(0, 0)
 
         # ------------------------------------------ 2. IMMEDIATE REWARD ------------------------------------------
 
