@@ -156,9 +156,9 @@ def save_to_file(final_array):
 if __name__ == '__main__':  # To run tests, is not accessed during main function call
 
     # Parameters
-    current_index = 4  # Index to get data from
-    window_size = 5  # Number of data points in the state
-    static_image_size = (64, 5)  # Shape on input image into the CNN.
+    current_index = 33  # Index to get data from
+    window_size = 34  # Number of data points in the state
+    static_image_size = (64, 34)  # Shape on input image into the CNN.
     mode = 'test'
 
     if mode == 'train':

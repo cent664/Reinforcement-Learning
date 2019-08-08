@@ -6,27 +6,34 @@ import matplotlib.dates as mdates
 import datetime
 import numpy as np
 from Candlesticks import candle
+import os
 
 # To plot the steps vs cumulative reward
 def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
 
-    if mode == 'train':
+    if mode == 'Train':
 
-        df = pd.read_csv("S&P500_train.csv")
-        # start_date = df
-        # Plotting cumulative reward
+        filename = 'S&P500_train.csv'
+        df = pd.read_csv(filename)
+
+        # ------------------------------------------ CUMULATIVE REWARD ------------------------------------------
+        fig = plt.figure(figsize=(16.5, 10.0))
         plt.plot(steps, rewardsum, label='Episode {}'.format(episode))
         plt.legend(loc='upper right')
         plt.xlabel('Days')
         plt.ylabel('Cumulative Reward ($)')
         plt.title('Training: Days vs Cumulative Reward - Window size {}'.format(window_size))
 
-    if mode == 'test':
+        graphpath = 'Graphs/{}ing {} - Window Size {}.png'.format(mode, filename, window_size)
+        plt.savefig(graphpath)
 
-        df = pd.read_csv("S&P500_test.csv")
+    if mode == 'Test':
+
+        filename = 'S&P500_test.csv'
+        df = pd.read_csv(filename)
+
         # ------------------------------------------ 1. CUMULATIVE REWARD ------------------------------------------
-
-        fig = plt.figure()
+        fig = plt.figure(figsize=(16.5, 10.0))
 
         ax1 = plt.subplot2grid((4, 1), (0, 0))
         plt.plot(steps, rewardsum)
@@ -42,9 +49,6 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
         plt.scatter(steps, rewardsum, s=50)
         ax1.xaxis.set_major_locator(mticker.MaxNLocator(len(steps) + 3))
         plt.grid(True)
-
-        # rewards = rewards[0: len(steps) - 1]
-        # rewards.insert(0, 0)
 
         # ------------------------------------------ 2. IMMEDIATE REWARD ------------------------------------------
 
@@ -152,6 +156,8 @@ def twodplot(steps, rewardsum, rewards, action, episode, window_size, mode):
         locs = locs[1:]
         plt.xticks(locs, list(og_dates[start - 1: start + len(steps) + 1]))
         plt.subplots_adjust(left=0.09, bottom=0.20, right=0.94, top=0.90, wspace=0.2, hspace=0)
+        graphpath = 'Graphs/{}ing {} - Window Size {}.png'.format(mode, filename, window_size)
+        plt.savefig(graphpath)
 
         # ------------------------------------------ SAVING THE ACTIONS ------------------------------------------
 

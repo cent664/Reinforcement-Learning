@@ -44,7 +44,7 @@ class DQNSolver:
         self.model.add(Dense(action_space))
         self.model.compile(loss="mean_squared_error", optimizer=RMSprop(lr=learning_rate, rho=0.95, epsilon=0.01), metrics=["accuracy"])
 
-        if mode == 'test':
+        if mode == 'Test':
             # Loading weights here
             print('Loading weights')
             self.exploration_rate = 0
@@ -88,7 +88,7 @@ class DQNSolver:
 def DQN_Agent(mode):
 
     # ------------------------------------------------ TRAINING --------------------------------------------------------
-    if mode == 'train':
+    if mode == 'Train':
         print('\nTraining:\n')
 
         # DQN Stocks
@@ -158,7 +158,7 @@ def DQN_Agent(mode):
         plt.show()
 
     # ------------------------------------------------ TESTING ---------------------------------------------------------
-    if mode == 'test':
+    if mode == 'Test':
         test_episodes = 1
         test_steps = 20
 
@@ -229,7 +229,7 @@ def DQN_Agent(mode):
 
 
 if __name__ == "__main__":
-    mode = 'test'
+    mode = 'Test'
     DQN_Agent(mode)
 
 

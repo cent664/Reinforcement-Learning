@@ -29,9 +29,9 @@ class StockTradingEnv:
     """
 
     def __init__(self, mode, steps):
-        if mode == 'test':
+        if mode == 'Test':
             self.df = pd.read_csv("S&P500_test.csv")  # Reading the data
-        elif mode == 'train':
+        elif mode == 'Train':
             self.df = pd.read_csv("S&P500_train.csv")  # Reading the data
 
         # Converting String to datetime
@@ -98,7 +98,7 @@ class StockTradingEnv:
         reward = position * (float(self.data_close[self.index + 1]) - float(self.data_open[self.index + 1]))
 
         # Saving the image
-        if mode == 'test':
+        if mode == 'Test':
             actual_image = im[0][0]
             date = self.data_date[self.index]
             actual_image = Image.fromarray(np.uint8(actual_image), 'L')
