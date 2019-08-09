@@ -109,7 +109,7 @@ def DQN_Agent(mode):
         while episode <= episodes:
 
             #  Resetting initial state, step size, cumulative reward and storing arrays at the start of each episode
-            state = env.reset(mode)  # Get initial state
+            state, date_range, filename = env.reset()  # Get initial state
             step = 1
             cumulative_reward = 0
 
@@ -147,7 +147,7 @@ def DQN_Agent(mode):
 
                 if step == steps:
                     score.append(cumulative_reward)
-                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, mode)
+                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, date_range, filename, mode)
                     break
                 else:
                     step += 1
@@ -182,7 +182,7 @@ def DQN_Agent(mode):
         while episode <= test_episodes:
 
             #  Resetting initial state, step size, cumulative reward and storing arrays at the start of each episode
-            state = env.reset(mode)  # Get initial state
+            state, date_range, filename = env.reset()  # Get initial state
             step = 1
             cumulative_reward = 0
 
@@ -217,7 +217,7 @@ def DQN_Agent(mode):
 
                 if step == test_steps:
                     score.append(cumulative_reward)
-                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, mode)
+                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, date_range, filename, mode)
                     break
                 else:
                     step += 1
