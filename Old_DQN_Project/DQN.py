@@ -229,7 +229,7 @@ def DQN_Agent(mode):
 
 
 if __name__ == "__main__":
-    mode = 'Test'
+    mode = 'Train'
     DQN_Agent(mode)
 
 

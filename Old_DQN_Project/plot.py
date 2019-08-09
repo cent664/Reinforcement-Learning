@@ -20,7 +20,7 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
         df = pd.read_csv(filename + '_train.csv')
 
         # ------------------------------------------ CUMULATIVE REWARD ------------------------------------------
-        fig = plt.figure(figsize=(16.5, 10.0))
+        # fig = plt.figure(figsize=(16.5, 10.0))
         plt.plot(steps, rewardsum, label='Episode {}'.format(episode))
         plt.legend(loc='upper right')
         plt.xlabel('Days')

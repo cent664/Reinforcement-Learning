@@ -104,15 +104,6 @@ class StockTradingEnv:
         # Reward is (current_position x price difference between close and open for the next day)
         reward = position * (float(self.data_close[self.index + 1]) - float(self.data_open[self.index + 1]))
 
-        # Creating directory if it doesn't exist
-        graphpath = 'Results/{} ({}). Window Size - {}/Test Images/'.format(self.filename, self.date_range, self.window_size)
-        if not os.path.exists(os.path.dirname(graphpath)):
-            try:
-                os.makedirs(os.path.dirname(graphpath))
-            except OSError as exc:  # Guard against race condition
-                if exc.errno != errno.EEXIST:
-                    raise
-
         # Saving the image
         if mode == 'Test':
             actual_image = im[0][0]
@@ -124,6 +115,16 @@ class StockTradingEnv:
                 action_actual = 'Hold'
             if action == 2:
                 action_actual = 'Buy'
+
+            # Creating directory if it doesn't exist
+            graphpath = 'Results/{} ({}). Window Size - {}/Test Images/'.format(self.filename, self.date_range,
+                                                                                self.window_size)
+            if not os.path.exists(os.path.dirname(graphpath)):
+                try:
+                    os.makedirs(os.path.dirname(graphpath))
+                except OSError as exc:  # Guard against race condition
+                    if exc.errno != errno.EEXIST:
+                        raise
 
             actual_image.save(graphpath + "{}-{}ing-{}.bmp".format(date, action_actual, str(round(reward,2))))
 
