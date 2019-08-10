@@ -10,7 +10,7 @@ from plot import twodplot
 
 # Parameters
 
-gamma = 0.95  # Discount factor
+gamma = 0  # Discount factor
 learning_rate = 0.00025  # Learning rate
 
 # TODO: Play with memory and batch size
@@ -20,16 +20,17 @@ batch_size = 32  # Batch size for random sampling in the memory pool
 # TODO: Play with exploration rate and decay
 exploration_max = 1.0  # Initial exploration rate
 exploration_min = 0.01  # Min value of exploration rate post decay
-exploration_decay = 0.995  # Exploration rate decay rate
+exploration_decay = 0.9  # Exploration rate decay rate
 
 episodes = 10
-steps = 252
+steps = 1260
 
 
 class DQNSolver:
 
     def __init__(self, observation_space, action_space, mode):
-        self.exploration_rate = exploration_max
+        self.exploration_rate = exploration_max  # Sets initial exploration rate to max
+        self.old_episode = 0  # To check for ep changes (needed to decay exploration rate)
 
         self.action_space = action_space  # Action space = 3 (Sell, Hold, Buy)
         self.memory = deque(maxlen=memory_size)  # Will forget old values as new ones are appended
@@ -63,7 +64,13 @@ class DQNSolver:
 
         return np.argmax(q_values[0])  # Argmax of tuple of 3 Q values, one for each action
 
-    def experience_replay(self):
+    def experience_replay(self, episode):
+        # To decay the exploration rate if the episode changes
+        if episode != self.old_episode:
+            self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
+            self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
+        self.old_episode = episode
+
         if len(self.memory) < batch_size:  # If has enough memory obtained, perform random batch sampling among those
             return
 
@@ -80,9 +87,6 @@ class DQNSolver:
 
         # Saving the weights
         self.model.save_weights('CNN_DQN_weights.h5')
-
-        self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
-        self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
 
 
 def DQN_Agent(mode):
@@ -143,7 +147,7 @@ def DQN_Agent(mode):
                 dqn_solver.remember(state, action, reward, state_next)  # Remember this instance
                 state = state_next  # Update the state
 
-                dqn_solver.experience_replay()  # Perform experience replay to update the network weights
+                dqn_solver.experience_replay(episode)  # Perform experience replay to update the network weights
 
                 if step == steps:
                     score.append(cumulative_reward)
@@ -229,7 +233,7 @@ def DQN_Agent(mode):
 
 
 if __name__ == "__main__":
-    mode = 'Train'
+    mode = 'Test'
     DQN_Agent(mode)
 
 
@@ -237,5 +241,5 @@ if __name__ == "__main__":
 # Batches
 # Include week, month, more months image sets
 # Upload env to gym
-# MAIN: Test reward structure, different image sizes/precision, volume and holdings or not
+# MAIN: Test reward structure, different image sizes, volume and holdings or not
 # Clean redundant variables and calls

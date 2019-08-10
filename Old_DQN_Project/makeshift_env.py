@@ -81,6 +81,7 @@ class StockTradingEnv:
         return im_data
 
     def reset(self):
+        self.index = self.window_size - 1  # Initial state index (Add ints to shift the starting index)
 
         # Compute the np array representation of the image at that index of size 'window_size'
         im = self.compute_im(self.index, self.window_size)
