@@ -10,7 +10,7 @@ from plot import twodplot
 
 # Parameters
 
-gamma = 0  # Discount factor
+gamma = 0.95  # Discount factor
 learning_rate = 0.00025  # Learning rate
 
 # TODO: Play with memory and batch size
@@ -20,7 +20,7 @@ batch_size = 32  # Batch size for random sampling in the memory pool
 # TODO: Play with exploration rate and decay
 exploration_max = 1.0  # Initial exploration rate
 exploration_min = 0.01  # Min value of exploration rate post decay
-exploration_decay = 0.9  # Exploration rate decay rate
+exploration_decay = 0.995  # Exploration rate decay rate
 
 episodes = 10
 steps = 1260
