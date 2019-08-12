@@ -1,0 +1,23 @@
+Episode = 1.
+
+Step = 1. Buying. Immediate Reward = -7.080077999999958
+Step = 2. Buying. Immediate Reward = 40.6301269999999
+Step = 3. Buying. Immediate Reward = 8.059814000000188
+Step = 4. Selling. Immediate Reward = -14.979980000000069
+Step = 5. Selling. Immediate Reward = -20.469970999999532
+Step = 6. Buying. Immediate Reward = 0.899902000000111
+Step = 7. Buying. Immediate Reward = -17.550048999999944
+Step = 8. Selling. Immediate Reward = 2.8898920000001453
+Step = 9. Buying. Immediate Reward = 5.399902999999995
+Step = 10. Buying. Immediate Reward = 0.15991200000007666
+Step = 11. Selling. Immediate Reward = 0.08007799999995768
+Step = 12. Selling. Immediate Reward = -11.040038999999979
+Step = 13. Buying. Immediate Reward = 5.909912000000077
+Step = 14. Buying. Immediate Reward = 4.579834000000119
+Step = 15. Buying. Immediate Reward = -2.25
+Step = 16. Selling. Immediate Reward = 6.069824000000153
+Step = 17. Buying. Immediate Reward = -28.400146000000404
+Step = 18. Buying. Immediate Reward = -12.290038999999979
+Step = 19. Selling. Immediate Reward = -5.260009999999966
+Step = 20. Selling. Immediate Reward = -8.820068999999876
+
