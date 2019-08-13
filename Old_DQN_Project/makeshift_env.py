@@ -31,7 +31,7 @@ class StockTradingEnv:
     """
 
     def __init__(self, mode, steps):
-        self.filename = 'S&P500'
+        self.filename = 'S&P500_exp'
         if mode == 'Test':
             self.df = pd.read_csv(self.filename + "_test.csv")  # Reading the data
         elif mode == 'Train':

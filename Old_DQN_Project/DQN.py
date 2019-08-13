@@ -23,7 +23,7 @@ exploration_min = 0.01  # Min value of exploration rate post decay
 exploration_decay = 0.995  # Exploration rate decay rate
 
 episodes = 10
-steps = 1260
+steps = 252
 
 
 class DQNSolver:
@@ -65,12 +65,6 @@ class DQNSolver:
         return np.argmax(q_values[0])  # Argmax of tuple of 3 Q values, one for each action
 
     def experience_replay(self, episode):
-        # To decay the exploration rate if the episode changes
-        if episode != self.old_episode:
-            self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
-            self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
-        self.old_episode = episode
-
         if len(self.memory) < batch_size:  # If has enough memory obtained, perform random batch sampling among those
             return
 
@@ -87,6 +81,12 @@ class DQNSolver:
 
         # Saving the weights
         self.model.save_weights('CNN_DQN_weights.h5')
+
+        # To decay the exploration rate if the episode changes
+        if episode != self.old_episode:
+            self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
+            self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
+        self.old_episode = episode
 
 
 def DQN_Agent(mode):
@@ -164,7 +164,7 @@ def DQN_Agent(mode):
     # ------------------------------------------------ TESTING ---------------------------------------------------------
     if mode == 'Test':
         test_episodes = 1
-        test_steps = 20
+        test_steps = 100
 
         print('\nTesting:\n')
 
