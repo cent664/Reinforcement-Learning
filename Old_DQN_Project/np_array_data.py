@@ -111,28 +111,28 @@ def coloring(test_array, static_image_size):
 
         if close > open:
             for i in range(close, high + 1):
-                if i < static_image_size[0] and i >= 0:
+                if static_image_size[0] > i >= 0:
                    final_array[i][j] += 106
 
             for i in range(open, close + 1):
-                if i < static_image_size[0] and i >= 0:
+                if static_image_size[0] > i >= 0:
                     final_array[i][j] += 139
 
             for i in range(low, open + 1):
-                if i < static_image_size[0] and i >= 0:
+                if static_image_size[0] > i >= 0:
                     final_array[i][j] += 69
 
         else:
             for i in range(open, high + 1):
-                if i < static_image_size[0] and i >= 0:
+                if static_image_size[0] > i >= 0:
                     final_array[i][j] += 106
 
             for i in range(close, open + 1):
-                if i < static_image_size[0] and i >= 0:
+                if static_image_size[0] > i >= 0:
                     final_array[i][j] += 36
 
             for i in range(low, close + 1):
-                if i < static_image_size[0] and i >= 0:
+                if static_image_size[0] > i >= 0:
                     final_array[i][j] += 69
 
     final_array = np.flip(final_array, axis=0)
@@ -140,7 +140,7 @@ def coloring(test_array, static_image_size):
 
 
 def save_to_file(final_array):
-    f = open("image.txt", "w")
+    f = open("TestArea\image.txt", "w")
 
     rows = len(final_array)
     columns = len(final_array[0])
@@ -158,7 +158,7 @@ if __name__ == '__main__':  # To run tests, is not accessed during main function
     # Parameters
     current_index = 33  # Index to get data from
     window_size = 34  # Number of data points in the state
-    static_image_size = (64, 34)  # Shape on input image into the CNN.
+    static_image_size = (68, 36)  # Shape on input image into the CNN.
     mode = 'test'
 
     if mode == 'train':
@@ -208,5 +208,5 @@ if __name__ == '__main__':  # To run tests, is not accessed during main function
 
     # Displaying the graph equivalent of my np array CNN fodder
     im = Image.fromarray(np.uint8(final_array), 'L')
-    im.save("Images/{}-{}ing-{}.bmp".format(date_now, action, str(round(reward, 2))))
+    im.save("TestArea/{}-{}ing-{}.bmp".format(date_now, action, str(round(reward, 2))))
     im.show()
