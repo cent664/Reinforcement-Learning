@@ -52,7 +52,7 @@ class StockTradingEnv:
         self.static_image_size = (64, self.window_size)  # Shape on input image into the CNN. Hard coded for now.
 
         self.action_space = 3
-        self.observation_space = (1, 64, self.window_size)
+        self.observation_space = (2, 64, self.window_size)
 
         # Calculating Scaling factor
         maxRange = -1000000
@@ -74,6 +74,14 @@ class StockTradingEnv:
         test_array = compute_array(self.df, current_price_index, window_size)
         test_array = reduce_dim(test_array, self.scaling_factor)
         im_data = coloring(test_array, self.static_image_size)
+
+        """Uncomment this code out to test Manu's images"""
+        # test = np.zeros([64, 16])
+        #
+        # test = np.expand_dims(test, axis=0)
+        # im_data = np.expand_dims(im_data, axis=0)
+        #
+        # im_data = np.concatenate([im_data, test], axis=0)
 
         im_data = np.expand_dims(im_data, axis=0)
         im_data = np.expand_dims(im_data, axis=0)
