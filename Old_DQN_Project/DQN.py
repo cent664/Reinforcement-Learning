@@ -24,7 +24,7 @@ exploration_min = 0.01  # Min value of exploration rate post decay
 exploration_decay = 0.9  # Exploration rate decay rate
 
 episodes = 10
-steps = 252
+steps = 1260
 
 
 class DQNSolver:
@@ -162,7 +162,7 @@ def DQN_Agent(mode):
             print("Episode: {}. Net Reward : {}".format(episode, score[episode]))
             episode += 1
 
-        plt.show()
+        # plt.show()
 
     # ------------------------------------------------ TESTING ---------------------------------------------------------
     if mode == 'Test':
@@ -232,7 +232,7 @@ def DQN_Agent(mode):
             print("Episode: {}. Score : {}".format(episode, score[episode]))
             episode += 1
 
-        plt.show()
+        # plt.show()
 
 
 if __name__ == "__main__":
