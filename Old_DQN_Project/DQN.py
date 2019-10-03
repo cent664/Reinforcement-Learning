@@ -24,12 +24,14 @@ exploration_min = 0.01  # Min value of exploration rate post decay
 exploration_decay = 0.9  # Exploration rate decay rate
 
 episodes = 10
-steps = 1260
+steps = 2
 
 
 class DQNSolver:
 
     def __init__(self, observation_space, action_space, mode):
+        print('Instantiating the network...')
+
         self.exploration_rate = exploration_max  # Sets initial exploration rate to max
         self.old_episode = 0  # To check for ep changes (needed to decay exploration rate)
 
@@ -48,7 +50,7 @@ class DQNSolver:
 
         if mode == 'Test':
             # Loading weights here
-            print('Loading weights')
+            print('Loading weights...')
             self.exploration_rate = 0
             self.model.load_weights('CNN_DQN_weights.h5', by_name=True)
 
@@ -90,13 +92,17 @@ class DQNSolver:
         # Saving the weights
         self.model.save_weights('CNN_DQN_weights.h5')
 
+    def instantiate_load_and_return_model(self):
+        self.model.load_weights('CNN_DQN_weights.h5', by_name=True)
+        return self.model
+
 
 @timeit
 def DQN_Agent(mode):
 
     # ------------------------------------------------ TRAINING --------------------------------------------------------
     if mode == 'Train':
-        print('\nTraining:\n')
+        print('\nTraining...\n')
 
         # DQN Stocks
         env = StockTradingEnv(mode, steps)  # Object of the environment
@@ -169,7 +175,7 @@ def DQN_Agent(mode):
         test_episodes = 1
         test_steps = 20
 
-        print('\nTesting:\n')
+        print('\nTesting...\n')
 
         # DQN Stocks
         env = StockTradingEnv(mode, test_steps)  # Resetting the environment
@@ -235,9 +241,52 @@ def DQN_Agent(mode):
         # plt.show()
 
 
+def visualization():  # To visualize intermediate layers
+
+    # Setting and getting the model
+    dqn_solver = DQNSolver((1, 64, 16), 3, 'Test')
+    model = dqn_solver.instantiate_load_and_return_model()
+
+    # print(model.summary())
+
+    # Summarizing filter shapes
+    for layer in model.layers:
+        # Checking for convolution layers
+        if 'conv' not in layer.name:
+            continue
+
+        # Getting filter weights
+        filters, biases = layer.get_weights()
+        print(layer.name, filters.shape)
+
+    # Retrieving weights from the second hidden layer
+    filters, biases = model.layers[1].get_weights()
+
+    # Normalizing filter values to (0-1) so we can visualize them
+    f_min, f_max = filters.min(), filters.max()
+    filters = (filters - f_min) / (f_max - f_min)
+
+    # plot first few filters
+    n_filters, ix = 6, 1
+    for i in range(n_filters):
+        # get the filter
+        f = filters[:, :, :, i]
+        # plot each channel separately
+        for j in range(3):
+            # specify subplot and turn of axis
+            ax = plt.subplot(n_filters, 3, ix)
+            ax.set_xticks([])
+            ax.set_yticks([])
+            # plot filter channel in grayscale
+            plt.imshow(f[:, :, j], cmap='gray')
+            ix += 1
+    # show the figure
+    plt.show()
+
 if __name__ == "__main__":
     mode = 'Train'
-    DQN_Agent(mode)
+    # DQN_Agent(mode)
+    visualization()
 
 
 #TODO:
