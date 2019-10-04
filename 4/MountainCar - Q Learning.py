@@ -24,29 +24,32 @@ for i in range(0, 19):
         q[round(((i / 10) - 1.2), 1), round(((j / 100) - 0.07), 2), 1] = 0
         q[round(((i / 10) - 1.2), 1), round(((j / 100) - 0.07), 2), 2] = 0
 
+
 def argmax(position, velocity):  # For greedy action
+
     best = -999999999999
     for action in range(0, 3):  # Looping through all the actions
-        if (best < q[position, velocity, action]):  # Picking the one with best immediate reward
+        if best < q[position, velocity, action]:  # Picking the one with best immediate reward
             best = q[position, velocity, action]
             optimal_action = action
     return optimal_action
 
-if __name__ == '__main__':
 
-    for episode in range(0, 5000):
+if __name__ == '__main__':
+    print("Episodes     Number of Wins")
+    for episode in range(0, 1000):
         count = 0  # To count the number of steps each episode
         state = obj.reset()  # Initializing the initial position and velocity
 
-        while (count < 200):
+        while count < 300:
             count = count + 1  # Counting the number of iterations
-            #if (episode > 0):
-                #obj.render()  # Rendering environment
+            if episode < 500:
+                obj.render()  # Rendering environment
 
             position = round(state[0], 1)
             velocity = round(state[1], 2)
 
-            if(np.random.uniform(0,1) > epsilon):  # Greedy action
+            if np.random.uniform(0, 1) > epsilon:  # Greedy action
                 action = argmax(position, velocity)
             else:
                 action = np.random.randint(0, 3)  # Random action
@@ -61,14 +64,14 @@ if __name__ == '__main__':
             q[position, velocity, action] = q[position, velocity, action] + alpha*(reward + (gamma * qmax_of_new_state) - q[position, velocity, action])
 
             state = new_state
-            if (state[0] >= 0.5):
+            if state[0] >= 0.5:
                 win = win + 1
-            if (done):  # If we reach the top, end episode
+            if done:  # If we reach the top, end episode
                 break
 
-        if (((episode + 1) % 500) == 0):
-            print(episode + 1, win)
+        if ((episode + 1) % 500) == 0:
+            print(episode + 1, "           ", win)
             win = 0
 
-        epsilon = epsilon * 0.9
-        alpha = alpha * 0.9
+        epsilon *= 0.9
+        alpha *= 0.9
