@@ -1,16 +1,19 @@
 import numpy as np
 import random
 from collections import deque
-from keras.models import Sequential
+from keras.models import Sequential, Model
 from keras.layers import Conv2D, Flatten, Dense
 from keras.optimizers import RMSprop
+from keras.preprocessing.image import load_img
 from makeshift_env import StockTradingEnv
 import matplotlib.pyplot as plt
 from plot import twodplot
+from utils import timeit
+from PIL import Image
 
 # Parameters
 
-gamma = 0.95  # Discount factor
+gamma = 0  # Discount factor
 learning_rate = 0.00025  # Learning rate
 
 # TODO: Play with memory and batch size
@@ -20,241 +23,261 @@ batch_size = 32  # Batch size for random sampling in the memory pool
 # TODO: Play with exploration rate and decay
 exploration_max = 1.0  # Initial exploration rate
 exploration_min = 0.01  # Min value of exploration rate post decay
-exploration_decay = 0.995  # Exploration rate decay rate
+exploration_decay = 0.9  # Exploration rate decay rate
 
 episodes = 10
-steps = 252
+steps = 2
+
 
 class DQNSolver:
 
-    def __init__(self, observation_space, action_space):
-        self.exploration_rate = exploration_max
+    def __init__(self, observation_space, action_space, mode):
+        print('Instantiating the network...')
+
+        self.exploration_rate = exploration_max  # Sets initial exploration rate to max
+        self.old_episode = 0  # To check for ep changes (needed to decay exploration rate)
 
         self.action_space = action_space  # Action space = 3 (Sell, Hold, Buy)
         self.memory = deque(maxlen=memory_size)  # Will forget old values as new ones are appended
 
         # Defining the network structure
-        # TODO: Check filter numbers and size. Check the negative subtraction error
-        self.model_CNN = Sequential()
-        self.model_CNN.add(Conv2D(32, 8, strides=(4, 4), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
-        self.model_CNN.add(Conv2D(64, 4, strides=(2, 2), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
-        self.model_CNN.add(Conv2D(64, 3, strides=(1, 1), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
-        self.model_CNN.add(Flatten())
+        self.model = Sequential()
+        self.model.add(Conv2D(32, 8, strides=(1, 1), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
+        self.model.add(Conv2D(64, 4, strides=(1, 1), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
+        self.model.add(Conv2D(64, 3, strides=(1, 1), padding="valid", activation="relu", input_shape=observation_space, data_format="channels_first"))
+        self.model.add(Flatten())
+        self.model.add(Dense(512, activation="relu"))
+        self.model.add(Dense(action_space))
+        self.model.compile(loss="mean_squared_error", optimizer=RMSprop(lr=learning_rate, rho=0.95, epsilon=0.01), metrics=["accuracy"])
 
-        self.model_FC = Sequential()
-        self.model_FC.add(Dense(512, activation="relu"))
-        self.model_FC.add(Dense(action_space))
+        if mode == 'Test':
+            # Loading weights here
+            print('Loading weights...')
+            self.exploration_rate = 0
+            self.model.load_weights('CNN_DQN_weights.h5', by_name=True)
 
-        self.model_FC.compile(loss="mean_squared_error", optimizer=RMSprop(lr=learning_rate, rho=0.95, epsilon=0.01), metrics=["accuracy"])
-
-        # print(self.model_CNN.summary())
-    def remember(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))  # Remembering instances in memory for future use
+    def remember(self, state, action, reward, next_state):
+        self.memory.append((state, action, reward, next_state))  # Remembering instances in memory for future use
 
     def act(self, state):
         # Random action -> 0, 1, 2
         if np.random.rand() < self.exploration_rate:
             return random.randrange(self.action_space)
 
-        weights = self.model_CNN.predict(state[0])  # Getting weights from the CNN (input = image)
-        features = np.concatenate((weights, state[1]), axis=1)  # Adding holdings and volume to the weights before FC
-
         # Q values based on model prediction on current state (Initially based on random weights)
-        q_values = self.model_FC.predict(features)
+        q_values = self.model.predict(state)
 
         return np.argmax(q_values[0])  # Argmax of tuple of 3 Q values, one for each action
 
-    def experience_replay(self):
+    def experience_replay(self, episode):
+
+        # To decay the exploration rate if the episode changes
+        if episode != self.old_episode:
+            self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
+            self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
+        self.old_episode = episode
+
         if len(self.memory) < batch_size:  # If has enough memory obtained, perform random batch sampling among those
             return
 
         batch = random.sample(self.memory, batch_size)  # Get a random batch
-        for state, action, reward, state_next, done in batch:
-            q_update = reward  # Reward obtained for a particular state, action pair
-            if not done:
+        for state, action, reward, state_next in batch:
 
-                weights = self.model_CNN.predict(state_next[0])  # Getting weights from the CNN (input = image)
-                features = np.concatenate((weights, state[1]), axis=1)  # Adding holdings and volume to the weights before FC
+            # Obtain Q value based on immediate reward and predicted q* value of next state
+            q_update = reward + gamma * np.amax(self.model.predict(state_next))
 
-                # Obtain Q value based on immediate reward and predicted q* value of next state
-                q_update = reward + gamma * np.amax(self.model_FC.predict(features))
-
-            weights = self.model_CNN.predict(state[0])  # Getting weights from the CNN (input = image)
-            features = np.concatenate((weights, state[1]), axis=1)  # Adding holdings and volume to the weights before FC
-
-            q_values = self.model_FC.predict(features)  # Obtain q value tuple for that state
+            q_values = self.model.predict(state)  # Obtain q value tuple for that state
             q_values[0][action] = q_update  # Update the q value for that state, action (one that we took)
             # Update the weights of the network based on the updated q value (based on immediate reward)
-            self.model_FC.fit(features, q_values, epochs=1, verbose=0)
+            self.model.fit(state, q_values, epochs=1, verbose=0)
 
-        self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
-        self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
+        # Saving the weights
+        self.model.save_weights('CNN_DQN_weights.h5')
 
-def DQN_Agent():
+    def instantiate_load_and_return_model(self):
+        self.model.load_weights('CNN_DQN_weights.h5', by_name=True)
+        return self.model
+
+
+@timeit
+def DQN_Agent(mode):
 
     # ------------------------------------------------ TRAINING --------------------------------------------------------
+    if mode == 'Train':
+        print('\nTraining...\n')
 
-    print('\nTraining:\n')
-    mode = 'train'
+        # DQN Stocks
+        env = StockTradingEnv(mode, steps)  # Object of the environment
 
-    # DQN Stocks
-    env = StockTradingEnv(mode)  # Object of the environment
+        # Get action and observation space
+        observation_space = env.observation_space
+        action_space = env.action_space
+        window_size = env.window_size
 
-    # Get action and observation space
-    observation_space = env.observation_space
-    action_space = env.action_space
-    window_size = env.window_size
+        # Object for the solver
+        dqn_solver = DQNSolver(observation_space, action_space, mode)
 
-    # Object for the solver
-    dqn_solver = DQNSolver(observation_space, action_space)
+        episode = 1
+        score = [0]
 
-    episode = 1
-    score = [0]
+        # Running for a number of episodes
+        while episode <= episodes:
 
-    # Running for a number of episodes
-    while episode <= episodes:
+            #  Resetting initial state, step size, cumulative reward and storing arrays at the start of each episode
+            state, date_range, filename = env.reset()  # Get initial state
+            step = 1
+            cumulative_reward = 0
 
-        #  Resetting initial state, step size, cumulative reward and storing arrays at the start of each episode
-        state = env.reset(mode)  # Get initial state
-        step = 1
-        cumulative_reward = 0
+            # To append step, cumulative reward, corresponding action to plot for each episode
+            step_x = []
+            cumulative_reward_y1 = []
+            rewards_y2 = []
+            actions_taken = []
 
-        # To append step, cumulative reward, corresponding action to plot for each episode
-        step_x = []
-        cumulative_reward_y1 = []
-        rewards_y2 = []
-        actions_taken = []
-        holdings = []
+            #  Going through time series data
+            while step <= steps:
+                action = dqn_solver.act(state)  # Get action based on argmax of the Q value approximation from the NN
+                state_next, reward, info = env.step(action, mode)
 
-        #  Going through time series data
-        while step <= steps:
-            action = dqn_solver.act(state)  # Get action based on argmax of the Q value approximation from the NN
-            state_next, reward, done, info = env.step(action, mode)
+                cumulative_reward += reward
 
-            if not done:
-                reward = reward
-            else:
-                reward = -reward
+                if action == 0:
+                    action_actual = 'Sell'
+                if action == 1:
+                    action_actual = 'Hold'
+                if action == 2:
+                    action_actual = 'Buy'
 
-            cumulative_reward += reward
+                step_x.append(step)
+                cumulative_reward_y1.append(cumulative_reward)
+                rewards_y2.append(reward)
+                actions_taken.append(action)
 
-            if action == 0:
-                action_actual = 'Sell'
-            if action == 1:
-                action_actual = 'Hold'
-            if action == 2:
-                action_actual = 'Buy'
+                # print("{} {}ing: Reward = {} Cumulative reward = {}".format(step, action_actual, reward, cumulative_reward))
 
-            step_x.append(step)
-            cumulative_reward_y1.append(cumulative_reward)
-            rewards_y2.append(reward)
-            actions_taken.append(action)
-            holdings.append(state_next[1][0][0])
+                dqn_solver.remember(state, action, reward, state_next)  # Remember this instance
+                state = state_next  # Update the state
 
-            # print("{} {}ing: Holdings = {} Reward = {} Cumulative reward = {}".format(step, action_actual, state_next[1], reward, cumulative_reward))
+                dqn_solver.experience_replay(episode)  # Perform experience replay to update the network weights
 
-            dqn_solver.remember(state, action, reward, state_next, done)  # Remember this instance
-            state = state_next  # Update the state
+                if step == steps:
+                    score.append(cumulative_reward)
+                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, date_range, filename, mode)
+                    break
+                else:
+                    step += 1
 
-            dqn_solver.experience_replay()  # Perform experience replay to update the network weights
+            print("Episode: {}. Net Reward : {}".format(episode, score[episode]))
+            episode += 1
 
-            if done or step == steps:
-                score.append(cumulative_reward)
-                twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, holdings, episode, window_size, mode)
-                break
-            else:
-                step += 1
-
-        print("Episode: {}. Score : {}".format(episode, score[episode]))
-        episode += 1
-
-    plt.show()
+        # plt.show()
 
     # ------------------------------------------------ TESTING ---------------------------------------------------------
+    if mode == 'Test':
+        test_episodes = 1
+        test_steps = 20
 
-    test_episodes = 1
-    test_steps = 20
+        print('\nTesting...\n')
 
-    print('\nTesting:\n')
-    mode = 'test'
+        # DQN Stocks
+        env = StockTradingEnv(mode, test_steps)  # Resetting the environment
 
-    # DQN Stocks
-    env = StockTradingEnv(mode)  # Resetting the environment
+        # Get action and observation space
+        observation_space = env.observation_space
+        action_space = env.action_space
+        window_size = env.window_size
 
-    # Resetting everything, except the CNN
+        # Object for the solver
+        dqn_solver = DQNSolver(observation_space, action_space, mode)
 
-    episode = 1
-    score = [0]
+        episode = 1
+        score = [0]
 
-    # Running for a number of episodes
-    while episode <= test_episodes:
+        # Running for a number of episodes
+        while episode <= test_episodes:
 
-        #  Resetting initial state, step size, cumulative reward and storing arrays at the start of each episode
-        state = env.reset(mode)  # Get initial state
-        step = 1
-        cumulative_reward = 0
+            #  Resetting initial state, step size, cumulative reward and storing arrays at the start of each episode
+            state, date_range, filename = env.reset()  # Get initial state
+            step = 1
+            cumulative_reward = 0
 
-        # To append step, cumulative reward, corresponding action to plot for each episode
-        step_x = []
-        cumulative_reward_y1 = []
-        rewards_y2 = []
-        actions_taken = []
-        holdings = []
+            # To append step, cumulative reward, corresponding action to plot for each episode
+            step_x = []
+            cumulative_reward_y1 = []
+            rewards_y2 = []
+            actions_taken = []
 
-        #  Going through time series data
-        while step <= test_steps:
-            action = dqn_solver.act(state)  # Get action based on argmax of the Q value approximation from the NN
-            state_next, reward, done, info = env.step(action, mode)
+            #  Going through time series data
+            while step <= test_steps:
+                action = dqn_solver.act(state)  # Get action based on argmax of the Q value approximation from the NN
+                state_next, reward, info = env.step(action, mode)
 
-            if not done:
-                reward = reward
-            else:
-                reward = -reward
+                cumulative_reward += reward
 
-            cumulative_reward += reward
+                if action == 0:
+                    action_actual = 'Sell'
+                if action == 1:
+                    action_actual = 'Hold'
+                if action == 2:
+                    action_actual = 'Buy'
 
-            if action == 0:
-                action_actual = 'Sell'
-            if action == 1:
-                action_actual = 'Hold'
-            if action == 2:
-                action_actual = 'Buy'
+                step_x.append(step)
+                cumulative_reward_y1.append(cumulative_reward)
+                rewards_y2.append(reward)
+                actions_taken.append(action)
 
-            step_x.append(step)
-            cumulative_reward_y1.append(cumulative_reward)
-            rewards_y2.append(reward)
-            actions_taken.append(action)
-            holdings.append(state_next[1][0][0])
+                print("{} {}ing: Reward = {} Cumulative reward = {}".format(step, action_actual, reward, cumulative_reward))
 
-            print("{} {}ing: Holdings = {} Reward = {} Cumulative reward = {}".format(step, action_actual, state_next[1], reward, cumulative_reward))
+                state = state_next  # Update the state
 
-            dqn_solver.remember(state, action, reward, state_next, done)  # Remember this instance
-            state = state_next  # Update the state
+                if step == test_steps:
+                    score.append(cumulative_reward)
+                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, date_range, filename, mode)
+                    break
+                else:
+                    step += 1
 
-            dqn_solver.experience_replay()  # Perform experience replay to update the network weights
+            print("Episode: {}. Score : {}".format(episode, score[episode]))
+            episode += 1
 
-            if done or step == test_steps:
-                score.append(cumulative_reward)
-                twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, holdings, episode, window_size, mode)
-                break
-            else:
-                step += 1
+        # plt.show()
 
-        print("Episode: {}. Score : {}".format(episode, score[episode]))
-        episode += 1
 
-    plt.show()
+def visualization():  # To visualize intermediate layers
 
+    # Setting and getting the model
+    dqn_solver = DQNSolver((1, 64, 16), 3, 'Test')
+    model = dqn_solver.instantiate_load_and_return_model()
+
+    # model.summary()
+
+    # Summarizing feature map shapes
+    for i in range(len(model.layers)):
+        layer = model.layers[i]
+        # Checking for convolution layers
+        if 'conv' not in layer.name:
+            continue
+        # summarize output shape
+        print(i, layer.name, layer.output.shape)
+
+    # redefine model to output right after the first hidden layer
+    model = Model(inputs=model.inputs, outputs=model.layers[1].output)
+    img = load_img('test_image.bmp')
+    img = np.asarray(img)
+    print(img[:][:][0].shape)
+    img.show()
+    img = np.expand_dims(img, axis=0)
+
+    feature_maps = model.predict(img)
 if __name__ == "__main__":
-    DQN_Agent()
+    mode = 'Train'
+    # DQN_Agent(mode)
+    visualization()
 
 
 #TODO:
-# Deconv instead of concat
-# Find a way to use GPU
-# Reward structure
 # Batches
 # Include week, month, more months image sets
 # Upload env to gym
-# MAIN: Test reward structure, different image sizes/precision, volume and holdings or not
-# Clean redundant variavles and calls
+# MAIN: Test reward structure, different image sizes, volume and holdings or not
+# Clean redundant variables and calls
