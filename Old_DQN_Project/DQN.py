@@ -261,8 +261,8 @@ def visualization():  # To visualize intermediate layers
         print(i, layer.name, layer.output.shape)
 
     # redefine model to output right after the first hidden layer
-    model = Model(inputs=model.inputs, outputs=model.layers[0].output)
-    img = load_img('test_image.bmp', target_size=(64, 16))
+    model = Model(inputs=model.inputs, outputs=model.layers[2].output)
+    img = load_img('TestArea/test_image.bmp', target_size=(64, 16))
     img = np.asarray(img)
     img = img[:, :, 0]
     img = np.expand_dims(img, axis=0)
