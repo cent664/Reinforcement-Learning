@@ -1,13 +1,15 @@
 import numpy as np
 import random
 from collections import deque
-from keras.models import Sequential
+from keras.models import Sequential, Model
 from keras.layers import Conv2D, Flatten, Dense
 from keras.optimizers import RMSprop
+from keras.preprocessing.image import load_img
 from makeshift_env import StockTradingEnv
 import matplotlib.pyplot as plt
 from plot import twodplot
 from utils import timeit
+from PIL import Image
 
 # Parameters
 
@@ -247,41 +249,32 @@ def visualization():  # To visualize intermediate layers
     dqn_solver = DQNSolver((1, 64, 16), 3, 'Test')
     model = dqn_solver.instantiate_load_and_return_model()
 
-    # print(model.summary())
+    # model.summary()
 
-    # Summarizing filter shapes
-    for layer in model.layers:
+    # Summarizing feature map shapes
+    for i in range(len(model.layers)):
+        layer = model.layers[i]
         # Checking for convolution layers
         if 'conv' not in layer.name:
             continue
+        # summarize output shape
+        print(i, layer.name, layer.output.shape)
 
-        # Getting filter weights
-        filters, biases = layer.get_weights()
-        print(layer.name, filters.shape)
+    # redefine model to output right after the first hidden layer
+    model = Model(inputs=model.inputs, outputs=model.layers[0].output)
+    img = load_img('test_image.bmp', target_size=(64, 16))
+    img = np.asarray(img)
+    img = img[:, :, 0]
+    img = np.expand_dims(img, axis=0)
+    img = np.expand_dims(img, axis=0)
 
-    # Retrieving weights from the second hidden layer
-    filters, biases = model.layers[1].get_weights()
-
-    # Normalizing filter values to (0-1) so we can visualize them
-    f_min, f_max = filters.min(), filters.max()
-    filters = (filters - f_min) / (f_max - f_min)
-
-    # plot first few filters
-    n_filters, ix = 64, 1
-    for i in range(n_filters):
-        # get the filter
-        f = filters[:, :, :, i]
-        # plot each channel separately
-        for j in range(32):
-            # specify subplot and turn of axis
-            ax = plt.subplot(n_filters, 32, ix)
-            ax.set_xticks([])
-            ax.set_yticks([])
-            # plot filter channel in grayscale
-            plt.imshow(f[:, :, j], cmap='gray')
-            ix += 1
-    # show the figure
-    plt.show()
+    feature_maps = model.predict(img)
+    fshape = feature_maps.shape
+    print(fshape)
+    for i in range(0, fshape[1]):
+        image_temp = feature_maps[0, i, :, :]
+        image_temp = Image.fromarray(np.uint8(image_temp), 'L')
+        image_temp.save("TestArea/Intermediate_layer/image_temp_{}.bmp".format(i))
 
 if __name__ == "__main__":
     mode = 'Train'
