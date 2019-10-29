@@ -3,6 +3,7 @@ from pytrends.request import TrendReq
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 
 def get_trends(tl):
@@ -12,7 +13,7 @@ def get_trends(tl):
         """Specify start and end date as well es the required keyword for your query"""
 
         start_date = datetime.date(2019, 1, 1)
-        end_date = datetime.date(2019, 2, 1)
+        end_date = datetime.date(2019, 12, 1)
         keyword_list = [tren]  # If you add a second string, minor adjustments in the code have to be made
 
         """Since we want weekly data for our query, we will create lists which include 
@@ -50,11 +51,16 @@ def get_trends(tl):
             key = str(weekly_date_list[i])+"T00 "+str(weekly_date_list[i+1])+"T00"
             p = TrendReq()
             p.build_payload(kw_list=keyword_list, timeframe=key)
-            interest = p.interest_over_time()
-            interest_list.append(interest)
-            print("GoogleTrends Call {} of {} : Timeframe: {} ".format(i+1, len(weekly_date_list)-1, key))
+            try:
+                interest = p.interest_over_time()
+                interest_list.append(interest)
+                print("GoogleTrends Call {} of {} : Timeframe: {} ".format(i + 1, len(weekly_date_list) - 1, key))
+            except:
+                print("Timed out. Retrying in 60 secs...")
+                time.sleep(60)
+                i -= 1
 
-        # print(interest_list)
+        print(interest_list)
 
         """Now we have to rescale our weekly data. We can do this
         by overlapping the weekly timeframes by one data point."""
@@ -68,10 +74,10 @@ def get_trends(tl):
             # Calculation of the ratio
             ratio = float(interest_list[i][keyword_list[0]].iloc[-1])/float(interest_list[i+1][keyword_list[0]].iloc[0])
             ratio_list.append(ratio)
-            print("{} of {}: Ratio = {}, Scale 1st hour of week {} = {}, scale last hour of week {} = {}"
-                  .format(i+1, len(interest_list)-1, ratio_list[i],
-                          i+1, float(interest_list[i+1][keyword_list[0]].iloc[0]),
-                          i, float(interest_list[i][keyword_list[0]].iloc[-1]),))
+            # print("{} of {}: Ratio = {}, Scale 1st hour of week {} = {}, scale last hour of week {} = {}"
+            #       .format(i+1, len(interest_list)-1, ratio_list[i],
+            #               i+1, float(interest_list[i+1][keyword_list[0]].iloc[0]),
+            #               i, float(interest_list[i][keyword_list[0]].iloc[-1]),))
 
             """Multiply the ratio with the scales of week i+1
             Therefore we add the column "Scale" and multiply times the value in ratio_list[i]
@@ -99,17 +105,17 @@ def get_trends(tl):
         plt.plot(df)
 
         plt.xlabel('Time')
-        plt.ylabel('no. scraped for each phrase')
-        plt.title('Employment report')
+        plt.ylabel('Amount of hits')
+        plt.title(tl[0])
         plt.show()
 
 
 if __name__ == '__main__':
 
-    # trends_list = ['trade war',
+    # trends_list = ['Trade war',
     #                'Employment report',
-    #                'stockmarket crash']
+    #                'Stockmarket crash']
 
-    trends_list = ['trade war']
+    trends_list = ['Trade war']
 
     get_trends(trends_list)
