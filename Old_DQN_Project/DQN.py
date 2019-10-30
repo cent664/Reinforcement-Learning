@@ -26,7 +26,7 @@ exploration_min = 0.01  # Min value of exploration rate post decay
 exploration_decay = 0.9  # Exploration rate decay rate
 
 episodes = 10
-steps = 2
+steps = 20
 
 
 class DQNSolver:
@@ -195,7 +195,6 @@ def DQN_Agent(mode):
 
         # Running for a number of episodes
         while episode <= test_episodes:
-
             #  Resetting initial state, step size, cumulative reward and storing arrays at the start of each episode
             state, date_range, filename = env.reset()  # Get initial state
             step = 1
@@ -237,7 +236,7 @@ def DQN_Agent(mode):
                 else:
                     step += 1
 
-            print("Episode: {}. Score : {}".format(episode, score[episode]))
+            # print("Episode: {}. Score : {}".format(episode, score[episode]))
             episode += 1
 
         # plt.show()
@@ -246,7 +245,7 @@ def DQN_Agent(mode):
 def visualization():  # To visualize intermediate layers
 
     # Setting and getting the model
-    dqn_solver = DQNSolver((1, 64, 16), 3, 'Test')
+    dqn_solver = DQNSolver((1, 16, 16), 3, 'Test')
     model = dqn_solver.instantiate_load_and_return_model()
 
     # model.summary()
@@ -261,8 +260,8 @@ def visualization():  # To visualize intermediate layers
         print(i, layer.name, layer.output.shape)
 
     # redefine model to output right after the first hidden layer
-    model = Model(inputs=model.inputs, outputs=model.layers[2].output)
-    img = load_img('TestArea/test_image.bmp', target_size=(64, 16))
+    model = Model(inputs=model.inputs, outputs=model.layers[0].output)
+    img = load_img('TestArea/test_image.bmp', target_size=(16, 16))
     img = np.asarray(img)
     img = img[:, :, 0]
     img = np.expand_dims(img, axis=0)
@@ -277,7 +276,7 @@ def visualization():  # To visualize intermediate layers
         image_temp.save("TestArea/Intermediate_layer/image_temp_{}.bmp".format(i))
 
 if __name__ == "__main__":
-    mode = 'Train'
+    mode = 'Test'
     # DQN_Agent(mode)
     visualization()
 

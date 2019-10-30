@@ -9,13 +9,15 @@ import math
 
 def get_trends(tl):
     eps = 1e-20  # To prevent division by zero error
+    i = 0
+    waiting_time = 60
 
     for tren in tl:
         print("tren", type(tren))
         """Specify start and end date as well es the required keyword for your query"""
 
-        start_date = datetime.date(2019, 1, 1)
-        end_date = datetime.date(2019, 12, 31)
+        start_date = datetime.date(2018, 1, 1)
+        end_date = datetime.date(2018, 12, 1)
         keyword_list = [tren]  # If you add a second string, minor adjustments in the code have to be made
 
         """Since we want weekly data for our query, we will create lists which include 
@@ -49,8 +51,8 @@ def get_trends(tl):
         interest_list = []
 
         # Here we download the data and print the current status of the process
-        for i in range(len(weekly_date_list)-1):
-            key = str(weekly_date_list[i])+"T00 "+str(weekly_date_list[i+1])+"T00"
+        while i < len(weekly_date_list) - 1:
+            key = str(weekly_date_list[i]) + "T00 " + str(weekly_date_list[i+1]) + "T00"
             try:
                 p = TrendReq()
                 p.build_payload(kw_list=keyword_list, timeframe=key)
@@ -58,9 +60,10 @@ def get_trends(tl):
                 interest_list.append(interest)
                 print("GoogleTrends Call {} of {} : Timeframe: {} ".format(i + 1, len(weekly_date_list) - 1, key))
             except:
-                print("Timed out. Retrying in 60 secs...")
-                time.sleep(60)
+                print("Timed out. Retrying in {} secs...".format(waiting_time))
+                time.sleep(waiting_time)
                 i -= 1
+            i += 1
 
         print(interest_list)
 
@@ -73,8 +76,8 @@ def get_trends(tl):
 
         # here we apply the correction parameter to all dfs in the interest list except interest_list[0]
         for i in range(len(interest_list)-1):
-            # Calculation of the ratio
-            ratio = (float(interest_list[i][keyword_list[0]].iloc[-1])/float(interest_list[i+1][keyword_list[0]].iloc[0]) + eps)
+            # Calculation of the ratio, eps to avoid division by subtraction error
+            ratio = float(interest_list[i][keyword_list[0]].iloc[-1])/(float(interest_list[i+1][keyword_list[0]].iloc[0]) + eps)
             ratio_list.append(ratio)
             # print("{} of {}: Ratio = {}, Scale 1st hour of week {} = {}, scale last hour of week {} = {}"
             #       .format(i+1, len(interest_list)-1, ratio_list[i],
@@ -118,6 +121,6 @@ if __name__ == '__main__':
     #                'Employment report',
     #                'Stockmarket crash']
 
-    trends_list = ['Stockmarket crash']
+    trends_list = ['Batman']
 
     get_trends(trends_list)

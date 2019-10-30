@@ -49,17 +49,17 @@ class StockTradingEnv:
 
         self.window_size = 16  # Number of data points in the state
         self.index = self.window_size - 1  # Initial state index (Add ints to shift the starting index)
-        self.static_image_size = (64, self.window_size)  # Shape on input image into the CNN. Hard coded for now.
+        self.static_image_size = (self.window_size, self.window_size)  # Shape on input image into the CNN. Hard coded for now.
 
         self.action_space = 3
-        self.observation_space = (2, 64, self.window_size)
+        self.observation_space = (1, self.window_size, self.window_size)
 
         # Calculating Scaling factor
         maxRange = -1000000
         for i in range(0, steps):
             maxRange = max(maxRange, max(self.data_high[i:i + self.window_size]) - min(self.data_low[i:i + self.window_size]))
 
-        self.dollars_per_pixel = maxRange/64
+        self.dollars_per_pixel = maxRange/self.window_size
         self.scaling_factor = 1 / self.dollars_per_pixel
         self.scaling_factor = self.scaling_factor / 2  # To account for the shift from centering close
 
