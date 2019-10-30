@@ -34,4 +34,3 @@ print(top_charts_df.head())
 # Get Google Keyword Suggestions
 suggestions_dict = pytrend.suggestions(keyword='pizza')
 print(suggestions_dict)
-

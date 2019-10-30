@@ -4,16 +4,18 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import math
 
 
 def get_trends(tl):
+    eps = 1e-20  # To prevent division by zero error
 
     for tren in tl:
         print("tren", type(tren))
         """Specify start and end date as well es the required keyword for your query"""
 
         start_date = datetime.date(2019, 1, 1)
-        end_date = datetime.date(2019, 12, 1)
+        end_date = datetime.date(2019, 12, 31)
         keyword_list = [tren]  # If you add a second string, minor adjustments in the code have to be made
 
         """Since we want weekly data for our query, we will create lists which include 
@@ -26,12 +28,12 @@ def get_trends(tl):
         weekly_date_list.append(start_date_temp)
 
         # This will return in list of weekly datetime.date objects - except the end date
-        while start_date_temp+datetime.timedelta(days=7) <= end_date:
+        while start_date_temp + datetime.timedelta(days=7) <= end_date:
             start_date_temp += datetime.timedelta(days=7)
             weekly_date_list.append(start_date_temp)
 
-        # This will add the end date to the weekly_date list. We now have a complete list in the specified timeframe
-        if start_date_temp+datetime.timedelta(days=7) > end_date:
+        # This will add the end date to the weekly_date list. We now have a complete list in the specified time frame
+        if start_date_temp + datetime.timedelta(days=7) > end_date:
             weekly_date_list.append(end_date)
 
         print(weekly_date_list)
@@ -40,7 +42,7 @@ def get_trends(tl):
         therefore we have to specify a key which includes the start date
         and the end-date with T00 as string for hourly data request"""
 
-        """This List will contain pandas Dataframes of weekly data with the features "date",
+        """This ist will contain pandas Dataframes of weekly data with the features "date",
         "keyword"(which contains weekly scaling between 0 and 100), "isPartial".
         Up to this point, the scaling is not correct."""
 
@@ -49,9 +51,9 @@ def get_trends(tl):
         # Here we download the data and print the current status of the process
         for i in range(len(weekly_date_list)-1):
             key = str(weekly_date_list[i])+"T00 "+str(weekly_date_list[i+1])+"T00"
-            p = TrendReq()
-            p.build_payload(kw_list=keyword_list, timeframe=key)
             try:
+                p = TrendReq()
+                p.build_payload(kw_list=keyword_list, timeframe=key)
                 interest = p.interest_over_time()
                 interest_list.append(interest)
                 print("GoogleTrends Call {} of {} : Timeframe: {} ".format(i + 1, len(weekly_date_list) - 1, key))
@@ -72,7 +74,7 @@ def get_trends(tl):
         # here we apply the correction parameter to all dfs in the interest list except interest_list[0]
         for i in range(len(interest_list)-1):
             # Calculation of the ratio
-            ratio = float(interest_list[i][keyword_list[0]].iloc[-1])/float(interest_list[i+1][keyword_list[0]].iloc[0])
+            ratio = (float(interest_list[i][keyword_list[0]].iloc[-1])/float(interest_list[i+1][keyword_list[0]].iloc[0]) + eps)
             ratio_list.append(ratio)
             # print("{} of {}: Ratio = {}, Scale 1st hour of week {} = {}, scale last hour of week {} = {}"
             #       .format(i+1, len(interest_list)-1, ratio_list[i],
@@ -116,6 +118,6 @@ if __name__ == '__main__':
     #                'Employment report',
     #                'Stockmarket crash']
 
-    trends_list = ['Trade war']
+    trends_list = ['Stockmarket crash']
 
     get_trends(trends_list)
