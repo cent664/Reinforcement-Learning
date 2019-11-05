@@ -10,10 +10,12 @@ import matplotlib.pyplot as plt
 from plot import twodplot
 from utils import timeit
 from PIL import Image
+import os
+import errno
 
 # Parameters
 
-gamma = 0  # Discount factor
+gamma = 0.9  # Discount factor
 learning_rate = 0.00025  # Learning rate
 
 # TODO: Play with memory and batch size
@@ -23,10 +25,10 @@ batch_size = 32  # Batch size for random sampling in the memory pool
 # TODO: Play with exploration rate and decay
 exploration_max = 1.0  # Initial exploration rate
 exploration_min = 0.01  # Min value of exploration rate post decay
-exploration_decay = 0.9  # Exploration rate decay rate
+exploration_decay = 0.995  # Exploration rate decay rate
 
 episodes = 10
-steps = 20
+steps = 252
 
 
 class DQNSolver:
@@ -247,6 +249,7 @@ def visualization():  # To visualize intermediate layers
     # Setting and getting the model
     dqn_solver = DQNSolver((1, 16, 16), 3, 'Test')
     model = dqn_solver.instantiate_load_and_return_model()
+    visualization_layer_number = 3  # Output of the layer that you want to visualize
 
     # model.summary()
 
@@ -260,7 +263,7 @@ def visualization():  # To visualize intermediate layers
         print(i, layer.name, layer.output.shape)
 
     # redefine model to output right after the first hidden layer
-    model = Model(inputs=model.inputs, outputs=model.layers[0].output)
+    model = Model(inputs=model.inputs, outputs=model.layers[visualization_layer_number].output)
     img = load_img('TestArea/test_image.bmp', target_size=(16, 16))
     img = np.asarray(img)
     img = img[:, :, 0]
@@ -270,13 +273,23 @@ def visualization():  # To visualize intermediate layers
     feature_maps = model.predict(img)
     fshape = feature_maps.shape
     print(fshape)
+
+    # Creating directory if it doesn't exist
+    path = "TestArea/Intermediate_layer/Layer {}/".format(visualization_layer_number)
+    if not os.path.exists(os.path.dirname(path)):
+        try:
+            os.makedirs(os.path.dirname(path))
+        except OSError as exc:  # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+
     for i in range(0, fshape[1]):
         image_temp = feature_maps[0, i, :, :]
         image_temp = Image.fromarray(np.uint8(image_temp), 'L')
-        image_temp.save("TestArea/Intermediate_layer/image_temp_{}.bmp".format(i))
+        image_temp.save(path + "{}.bmp".format(i))
 
 if __name__ == "__main__":
-    mode = 'Test'
+    mode = 'Train'
     # DQN_Agent(mode)
     visualization()
 

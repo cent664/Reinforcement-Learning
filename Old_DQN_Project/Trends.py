@@ -4,20 +4,20 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-import math
+# from ohlc import convert
 
 
 def get_trends(tl):
-    eps = 1e-20  # To prevent division by zero error
+    eps = 1e-100  # To prevent division by zero error
     i = 0
     waiting_time = 60
 
     for tren in tl:
-        print("tren", type(tren))
+        print("Trend keyword:", type(tren))
         """Specify start and end date as well es the required keyword for your query"""
 
-        start_date = datetime.date(2018, 1, 1)
-        end_date = datetime.date(2018, 12, 1)
+        start_date = datetime.date(2018, 1, 1)  # Y - M - D
+        end_date = datetime.date(2018, 12, 31)  # Y - M - D
         keyword_list = [tren]  # If you add a second string, minor adjustments in the code have to be made
 
         """Since we want weekly data for our query, we will create lists which include 
@@ -75,7 +75,7 @@ def get_trends(tl):
         ratio_list = []
 
         # here we apply the correction parameter to all dfs in the interest list except interest_list[0]
-        for i in range(len(interest_list)-1):
+        for i in range(len(interest_list) - 1):
             # Calculation of the ratio, eps to avoid division by subtraction error
             ratio = float(interest_list[i][keyword_list[0]].iloc[-1])/(float(interest_list[i+1][keyword_list[0]].iloc[0]) + eps)
             ratio_list.append(ratio)
@@ -121,6 +121,6 @@ if __name__ == '__main__':
     #                'Employment report',
     #                'Stockmarket crash']
 
-    trends_list = ['Batman']
+    trends_list = ['Stockmarket crash']
 
     get_trends(trends_list)
