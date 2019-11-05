@@ -101,13 +101,13 @@ class StockTradingEnv:
 
         im = self.state
 
-        if (action == 0):  # Sell/Short
+        if action == 0:  # Sell/Short
             position = -1.0
 
-        if (action == 1):  # Hold/Nothing
+        if action == 1:  # Hold/Nothing
             position = 0.0
 
-        if (action == 2):  # Buy/Long
+        if action == 2:  # Buy/Long
             position = +1.0
 
         # Reward is (current_position x price difference between close and open for the next day)
