@@ -8,7 +8,7 @@ import time
 
 
 def get_trends(tl):
-    eps = 1e-100  # To prevent division by zero error
+    eps = 1e-10  # To prevent division by zero error
     i = 0
     waiting_time = 60
 
@@ -16,12 +16,12 @@ def get_trends(tl):
         print("Trend keyword:", type(tren))
         """Specify start and end date as well es the required keyword for your query"""
 
-        start_date = datetime.date(2018, 1, 1)  # Y - M - D
-        end_date = datetime.date(2018, 12, 31)  # Y - M - D
+        start_date = datetime.date(2018, 1, 1)  # Y-M-D
+        end_date = datetime.date(2018, 1, 9)  # Y-M-D
         keyword_list = [tren]  # If you add a second string, minor adjustments in the code have to be made
 
         """Since we want weekly data for our query, we will create lists which include 
-        the weekly start and end date in the specified timeframe - 2018.01.01 to 2019.5.01"""
+        the weekly start and end date in the specified timeframe - 2018.01.01 to 2019.1.01"""
 
         weekly_date_list = []
 
@@ -65,7 +65,7 @@ def get_trends(tl):
                 i -= 1
             i += 1
 
-        print(interest_list)
+        print(interest_list[0]['Stockmarket crash'])
 
         """Now we have to rescale our weekly data. We can do this
         by overlapping the weekly timeframes by one data point."""
@@ -77,6 +77,7 @@ def get_trends(tl):
         # here we apply the correction parameter to all dfs in the interest list except interest_list[0]
         for i in range(len(interest_list) - 1):
             # Calculation of the ratio, eps to avoid division by subtraction error
+            print(float(interest_list[i][keyword_list[0]].iloc[-1]), float(interest_list[i+1][keyword_list[0]].iloc[0]))
             ratio = float(interest_list[i][keyword_list[0]].iloc[-1])/(float(interest_list[i+1][keyword_list[0]].iloc[0]) + eps)
             ratio_list.append(ratio)
             # print("{} of {}: Ratio = {}, Scale 1st hour of week {} = {}, scale last hour of week {} = {}"
@@ -90,10 +91,10 @@ def get_trends(tl):
             with df["Scale"] in the interest list"""
 
             interest_list[0]["Scale_{}".format(keyword_list)] = interest_list[0][keyword_list[0]]
-            interest_list[i+1]["Scale_{}".format(keyword_list)] = interest_list[i+1][keyword_list[0]].apply(lambda x: x*ratio_list[i])
+            interest_list[i+1]["Scale_{}".format(keyword_list)] = interest_list[i+1][keyword_list[0]].apply(lambda x: x * ratio_list[i])
             interest_list[i+1][keyword_list[0]] = interest_list[i+1]["Scale_{}".format(keyword_list)]
 
-        """We now combine the dataframes in the interest list to a Pandas Dataframe.
+        """We now combine the dataframes in the interest list to a Pandas dataframe.
         The data has the correct scaling now. But not yet in the range of 0 and 100."""
 
         df = pd.concat(interest_list)
@@ -103,7 +104,7 @@ def get_trends(tl):
 
         """As last step we scale the data back like google to a range between 0 and 100."""
         max_interest = np.max(df["Scale_{}".format(keyword_list)])
-        df["Scale_{}".format(keyword_list)] = df["Scale_{}".format(keyword_list)]/max_interest*100
+        df["Scale_{}".format(keyword_list)] = df["Scale_{}".format(keyword_list)]/max_interest * 100
 
         # print(df.describe())
         df.to_csv(r'Trends.csv')
