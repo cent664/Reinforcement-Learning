@@ -28,7 +28,7 @@ exploration_min = 0.01  # Min value of exploration rate post decay
 exploration_decay = 0.995  # Exploration rate decay rate
 
 episodes = 10
-steps = 252
+steps = 200
 
 
 class DQNSolver:
@@ -102,14 +102,14 @@ class DQNSolver:
 
 
 @timeit
-def DQN_Agent(mode):
+def DQN_Agent(mode, stock, trend):
 
     # ------------------------------------------------ TRAINING --------------------------------------------------------
     if mode == 'Train':
         print('\nTraining...\n')
 
         # DQN Stocks
-        env = StockTradingEnv(mode, steps)  # Object of the environment
+        env = StockTradingEnv(mode, steps, trend)  # Object of the environment
 
         # Get action and observation space
         observation_space = env.observation_space
@@ -182,7 +182,7 @@ def DQN_Agent(mode):
         print('\nTesting...\n')
 
         # DQN Stocks
-        env = StockTradingEnv(mode, test_steps)  # Resetting the environment
+        env = StockTradingEnv(mode, test_steps, trend)  # Resetting the environment
 
         # Get action and observation space
         observation_space = env.observation_space
@@ -290,8 +290,10 @@ def visualization():  # To visualize intermediate layers
 
 if __name__ == "__main__":
     mode = 'Train'
-    # DQN_Agent(mode)
-    visualization()
+    stock = 'S&P500'
+    trend = 'Stockmarket crash'
+    DQN_Agent(mode, stock, trend)
+    # visualization()
 
 
 #TODO:
