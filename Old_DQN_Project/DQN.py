@@ -15,7 +15,7 @@ import errno
 
 # Parameters
 
-gamma = 0.9  # Discount factor
+gamma = 0.95  # Discount factor
 learning_rate = 0.00025  # Learning rate
 
 # TODO: Play with memory and batch size
@@ -73,12 +73,6 @@ class DQNSolver:
 
     def experience_replay(self, episode):
 
-        # To decay the exploration rate if the episode changes
-        if episode != self.old_episode:
-            self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
-            self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
-        self.old_episode = episode
-
         if len(self.memory) < batch_size:  # If has enough memory obtained, perform random batch sampling among those
             return
 
@@ -96,20 +90,26 @@ class DQNSolver:
         # Saving the weights
         self.model.save_weights('CNN_DQN_weights.h5')
 
+        # To decay the exploration rate if the episode changes
+        if episode != self.old_episode:
+            self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
+            self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
+        self.old_episode = episode
+
     def instantiate_load_and_return_model(self):
         self.model.load_weights('CNN_DQN_weights.h5', by_name=True)
         return self.model
 
 
 @timeit
-def DQN_Agent(mode, stock, trend):
+def DQN_Agent(mode, stock, trend, window_size):
 
     # ------------------------------------------------ TRAINING --------------------------------------------------------
     if mode == 'Train':
         print('\nTraining...\n')
 
         # DQN Stocks
-        env = StockTradingEnv(mode, steps, trend)  # Object of the environment
+        env = StockTradingEnv(mode, steps, stock, trend, window_size)  # Object of the environment
 
         # Get action and observation space
         observation_space = env.observation_space
@@ -182,7 +182,7 @@ def DQN_Agent(mode, stock, trend):
         print('\nTesting...\n')
 
         # DQN Stocks
-        env = StockTradingEnv(mode, test_steps, trend)  # Resetting the environment
+        env = StockTradingEnv(mode, test_steps, stock, trend, window_size)  # Resetting the environment
 
         # Get action and observation space
         observation_space = env.observation_space
@@ -244,10 +244,10 @@ def DQN_Agent(mode, stock, trend):
         # plt.show()
 
 
-def visualization():  # To visualize intermediate layers
+def visualization(window_size):  # To visualize intermediate layers
 
     # Setting and getting the model
-    dqn_solver = DQNSolver((1, 16, 16), 3, 'Test')
+    dqn_solver = DQNSolver((1, window_size, window_size), 3, 'Test')
     model = dqn_solver.instantiate_load_and_return_model()
     visualization_layer_number = 3  # Output of the layer that you want to visualize
 
@@ -292,8 +292,9 @@ if __name__ == "__main__":
     mode = 'Train'
     stock = 'S&P500'
     trend = 'Stockmarket crash'
-    DQN_Agent(mode, stock, trend)
-    # visualization()
+    window_size = 16
+    DQN_Agent(mode, stock, trend, window_size)
+    # visualization(window_size)
 
 
 #TODO:

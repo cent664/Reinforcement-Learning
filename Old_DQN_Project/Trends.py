@@ -104,7 +104,7 @@ def get_trends(keyword):
     df["Scale_{}".format(keyword)] = df["Scale_{}".format(keyword)]/max_interest * 100
 
     # print(df.describe())
-    df.to_csv('{}_Trends.csv'.format(keyword))
+    df.to_csv('{}.csv'.format(keyword))
     plt.plot(df)
 
     plt.xlabel('Time')

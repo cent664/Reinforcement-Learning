@@ -41,7 +41,7 @@ class StockTradingEnv:
             self.df_stocks = pd.read_csv(self.stockname + "_test.csv")
         elif mode == 'Train':
             self.df_stocks = pd.read_csv(self.stockname + "_train.csv")
-        self.df_trends = pd.read_csv(self.trendname)
+        self.df_trends = pd.read_csv(self.trendname + "_candlesticks.csv")
 
         # Converting String to datetime
         self.data_stocks_date = self.df_stocks['Date']
@@ -65,9 +65,9 @@ class StockTradingEnv:
         self.static_image_size = (self.window_size, self.window_size)  # Shape of the input image into the CNN
 
         self.action_space = 3
-        self.observation_space = (1, self.window_size, self.window_size)
+        self.observation_space = (2, self.window_size, self.window_size)
 
-        # Calculating Scaling factor
+        # Calculating Scaling factor for stocks
         stocks_maxRange = -1000000
         for i in range(0, steps):
             stocks_maxRange = max(stocks_maxRange, max(self.data_stocks_high[i:i + self.window_size]) - min(self.data_stocks_low[i:i + self.window_size]))
@@ -76,7 +76,7 @@ class StockTradingEnv:
         self.stocks_scaling_factor = 1 / self.stocks_dollars_per_pixel
         self.stocks_scaling_factor = self.stocks_scaling_factor / 2  # To account for the shift from centering close
 
-        # Calculating Scaling factor
+        # Calculating Scaling factor for trends
         trends_maxRange = -1000000
         for i in range(0, steps):
             trends_maxRange = max(trends_maxRange, max(self.data_trends_high[i:i + self.window_size]) - min(self.data_trends_low[i:i + self.window_size]))
@@ -107,9 +107,7 @@ class StockTradingEnv:
         stocks_im_data = np.expand_dims(stocks_im_data, axis=0)
 
         im_data = np.concatenate([stocks_im_data, trends_im_data], axis=0)
-
-        # im_data = np.expand_dims(im_data, axis=0)
-        # im_data = np.expand_dims(im_data, axis=0)
+        im_data = np.expand_dims(im_data, axis=0)
 
         return im_data
 
@@ -120,7 +118,7 @@ class StockTradingEnv:
         im = self.compute_im(self.index, self.window_size)
         self.state = im
 
-        return self.state, self.date_stocks_range, self.filename
+        return self.state, self.date_stocks_range, self.stockname
 
     def step(self, action, mode):
 
@@ -140,9 +138,14 @@ class StockTradingEnv:
 
         # Saving the image
         if mode == 'Test':
-            actual_image = im[0][0]
+            # [0][0] for one the first image, [0][1] for the second
+            stock_image = im[0][0]
+            trend_image = im[0][1]
+            stock_image = Image.fromarray(np.uint8(stock_image), 'L')
+            trend_image = Image.fromarray(np.uint8(trend_image), 'L')
+
             date = self.data_stocks_date[self.index]
-            actual_image = Image.fromarray(np.uint8(actual_image), 'L')
+
             if action == 0:
                 action_actual = 'Sell'
             if action == 1:
@@ -160,8 +163,8 @@ class StockTradingEnv:
                     if exc.errno != errno.EEXIST:
                         raise
 
-            actual_image.save(graphpath + "{}-{}ing-{}.bmp".format(date, action_actual, str(round(reward, 2))))
-
+            stock_image.save(graphpath + "stock_{}-{}ing-{}.bmp".format(date, action_actual, str(round(reward, 2))))
+            trend_image.save(graphpath + "trend_{}-{}ing-{}.bmp".format(date, action_actual, str(round(reward, 2))))
         self.index = self.index + 1  # Incrementing the window
 
         # Computing new image, volume array with respect to the new index

@@ -2,11 +2,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-# To aggregate and clean hourly data to daily data
+# To clean and aggregate hourly data to daily data
 def aggregate(df):
     df.drop_duplicates(subset="date", keep='first', inplace=True)
     time = df["date"].values
-    data = df["Scale_['Stockmarket crash']"].values
+    data = df["Scale_Stockmarket crash"].values
     temp_data = 0
     count = 0
     temp_data_list = []
@@ -30,11 +30,11 @@ def aggregate(df):
     plt.show()
 
 
-# To clean hourly data and convert to candlesticks
-def convert(df, keyword):
+# To clean hourly data and convert to candlesticks format
+def convert(df, trend, stock):
     df.drop_duplicates(subset="date", keep='first', inplace=True)
     time = df["date"].values
-    data = df["Scale_['Stockmarket crash']"].values
+    data = df["Scale_Stockmarket crash"].values
 
     date = []
     open = []
@@ -44,6 +44,7 @@ def convert(df, keyword):
     min = 99999999999999999
     max = 0
 
+    # Looping through the trend dataframe
     for i in range(len(time) - 1):
         # Stock Exchange opens at 9.30 am - Assuming 10 am for now
         if time[i][11:16] == "10:00":
@@ -65,13 +66,31 @@ def convert(df, keyword):
             low.append(min)
 
             max = 0
-            min = 0
+            min = 99999999999999999
 
+    # Creating the ohlc dataframe from open, high, low, close values just obtained
     df = pd.DataFrame(list(zip(date, open, high, low, close)), columns=['Date', 'Open', 'High', 'Low', 'Close'])
-    df.to_csv("{}_Trends_candlesticks.csv".format(keyword))
+    
+    df_stock = pd.read_csv('{}_train.csv'.format(stock))
+    df_trend = df.copy()
+
+    # Removing non-intersecting dates between stock and trends data
+    i = 0
+    j = 0
+    while i < len(df_stock):
+        if df_stock['Date'][i] != df_trend['Date'][j]:
+            df_trend.drop([j], inplace=True)
+            i -= 1
+        i += 1
+        j += 1
+
+    # Saving final data file to generate images from
+    df_trend.to_csv("{}_candlesticks.csv".format(trend))
+
 
 if __name__ == '__main__':
-    keyword = "Stockmarket crash"
-    trends_df = pd.read_csv('{}_Trends.csv'.format(keyword))
+    trend = "Stockmarket crash"
+    stock = "S&P500"
+    trends_df = pd.read_csv('{}.csv'.format(trend))
     # aggregate(trends_df)
-    convert(trends_df, keyword)
+    convert(trends_df, trend, stock)
