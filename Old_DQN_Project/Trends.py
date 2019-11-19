@@ -6,15 +6,19 @@ import matplotlib.pyplot as plt
 import time
 
 
-def get_trends(keyword):
+def get_trends(keyword, mode):
     i = 0
     waiting_time = 60
 
     print("Trend keyword:", type(keyword))
     """Specify start and end date as well es the required keyword for your query"""
 
-    start_date = datetime.date(2018, 1, 1)  # Y-M-D
-    end_date = datetime.date(2019, 1, 1)  # Y-M-D
+    if mode == 'Train':
+        start_date = datetime.date(2018, 1, 1)  # Y-M-D
+        end_date = datetime.date(2019, 1, 1)  # Y-M-D
+    else:
+        start_date = datetime.date(2019, 1, 1)  # Y-M-D
+        end_date = datetime.date(2019, 11, 1)  # Y-M-D
 
     """Since we want weekly data for our query, we will create lists which include
     the weekly start and end date in the specified timeframe - 2018.01.01 to 2019.1.01"""
@@ -104,7 +108,7 @@ def get_trends(keyword):
     df["Scale_{}".format(keyword)] = df["Scale_{}".format(keyword)]/max_interest * 100
 
     # print(df.describe())
-    df.to_csv('{}.csv'.format(keyword))
+    df.to_csv('{}_{}.csv'.format(keyword, mode))
     plt.plot(df)
 
     plt.xlabel('Time')
@@ -115,4 +119,5 @@ def get_trends(keyword):
 
 if __name__ == '__main__':
     trend = "Stockmarket crash"
-    get_trends(trend)
+    mode = 'Train'
+    get_trends(trend, mode)

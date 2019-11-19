@@ -156,16 +156,17 @@ def save_to_file(final_array):
 if __name__ == '__main__':  # To run tests, is not accessed during main function call
 
     # Parameters
-    current_index = 33  # Index to get data from
-    window_size = 34  # Number of data points in the state
-    static_image_size = (68, 36)  # Shape on input image into the CNN.
+    current_index = 16  # Index to get data from
+    window_size = 16  # Number of data points in the state
+    static_image_size = (window_size, window_size)  # Shape on input image into the CNN.
     mode = 'test'
 
     if mode == 'train':
         df = pd.read_csv("S&P500_train.csv")
-        steps = 252
+        steps = 200
     else:
-        df = pd.read_csv("S&P500_test.csv")
+        # df = pd.read_csv("S&P500_test.csv")
+        df = pd.read_csv("Stockmarket crash_candlesticks.csv")
         steps = 20
 
     date = df['Date']
@@ -180,11 +181,10 @@ if __name__ == '__main__':  # To run tests, is not accessed during main function
     # Calculating Dollars per pixel based on max range
     maxRange = -1000000
     for i in range(0, steps):
-        maxRange = max(maxRange,
-                       max(high[i:i + window_size]) - min(low[i:i + window_size]))
+        maxRange = max(maxRange, max(high[i:i + window_size]) - min(low[i:i + window_size]))
 
     print("Max range = ", maxRange)
-    dollars_per_pixel = maxRange/64
+    dollars_per_pixel = maxRange/window_size
     print("Dollars per Pixel = ", dollars_per_pixel)
     scaling_factor = 1 / dollars_per_pixel
     scaling_factor = scaling_factor / 2  # To account for the shift from centering close
@@ -202,11 +202,8 @@ if __name__ == '__main__':  # To run tests, is not accessed during main function
 
     # To check if I've got the pixel values correctly
     save_to_file(final_array)
-    date_now = date[current_index]
-    reward = 5.26
-    action = 'Sell'
 
     # Displaying the graph equivalent of my np array CNN fodder
     im = Image.fromarray(np.uint8(final_array), 'L')
-    im.save("TestArea/{}-{}ing-{}.bmp".format(date_now, action, str(round(reward, 2))))
+    im.save("TestArea/test_image.bmp")
     im.show()

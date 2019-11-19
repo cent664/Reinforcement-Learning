@@ -31,7 +31,7 @@ def aggregate(df):
 
 
 # To clean hourly data and convert to candlesticks format
-def convert(df, trend, stock):
+def convert(df, trend, stock, mode):
     df.drop_duplicates(subset="date", keep='first', inplace=True)
     time = df["date"].values
     data = df["Scale_Stockmarket crash"].values
@@ -71,7 +71,7 @@ def convert(df, trend, stock):
     # Creating the ohlc dataframe from open, high, low, close values just obtained
     df = pd.DataFrame(list(zip(date, open, high, low, close)), columns=['Date', 'Open', 'High', 'Low', 'Close'])
     
-    df_stock = pd.read_csv('{}_train.csv'.format(stock))
+    df_stock = pd.read_csv('{}_{}.csv'.format(stock, mode))
     df_trend = df.copy()
 
     # Removing non-intersecting dates between stock and trends data
@@ -91,6 +91,7 @@ def convert(df, trend, stock):
 if __name__ == '__main__':
     trend = "Stockmarket crash"
     stock = "S&P500"
-    trends_df = pd.read_csv('{}.csv'.format(trend))
+    mode = "Train"
+    trends_df = pd.read_csv('{}_{}.csv'.format(trend, mode))
     # aggregate(trends_df)
-    convert(trends_df, trend, stock)
+    convert(trends_df, trend, stock, mode)
