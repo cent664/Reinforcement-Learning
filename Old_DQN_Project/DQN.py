@@ -289,7 +289,7 @@ def visualization(window_size):  # To visualize intermediate layers
         image_temp.save(path + "{}.bmp".format(i))
 
 if __name__ == "__main__":
-    mode = 'Test'
+    mode = 'Train'
     stock = 'S&P500'
     trend = 'Stockmarket crash'
     window_size = 16

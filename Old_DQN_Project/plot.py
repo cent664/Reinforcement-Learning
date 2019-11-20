@@ -15,10 +15,11 @@ import errno
 def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_range, filename, mode):
 
     graphpath = 'Results/{} ({}). Window Size - {}/'.format(filename, date_range, window_size)
+    stockname, _ = filename.split("_")
 
     if mode == 'Train':
 
-        df = pd.read_csv(filename + '_train.csv')
+        df = pd.read_csv(stockname + '_{}.csv'.format(mode))
 
         # ------------------------------------------ CUMULATIVE REWARD ------------------------------------------
         # fig = plt.figure(figsize=(16.5, 10.0))
@@ -43,7 +44,7 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
 
     if mode == 'Test':
 
-        df = pd.read_csv(filename + '_test.csv')
+        df = pd.read_csv(stockname + '_{}.csv'.format(mode))
 
         # ------------------------------------------ 1. CUMULATIVE REWARD ------------------------------------------
         fig = plt.figure(figsize=(16.5, 10.0))
@@ -186,10 +187,7 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
 
 def saving_actions(episode, graphpath, steps, actions, rewards, mode):
     filename = 'Actions_taken'
-    if mode == 'Train':
-        filename += '_train.txt'
-    else:
-        filename += '_test.txt'
+    filename += "_{}.txt".format(mode)
 
     if episode == 1:
         f = open(graphpath + filename, "w")

@@ -119,5 +119,5 @@ def get_trends(keyword, mode):
 
 if __name__ == '__main__':
     trend = "Stockmarket crash"
-    mode = 'Train'
+    mode = 'Test'
     get_trends(trend, mode)

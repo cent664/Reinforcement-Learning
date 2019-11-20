@@ -37,11 +37,8 @@ class StockTradingEnv:
         self.filename = self.stockname + "_" + self.trendname
 
         # Reading the data
-        if mode == 'Test':
-            self.df_stocks = pd.read_csv(self.stockname + "_test.csv")
-        elif mode == 'Train':
-            self.df_stocks = pd.read_csv(self.stockname + "_train.csv")
-        self.df_trends = pd.read_csv(self.trendname + "_candlesticks.csv")
+        self.df_stocks = pd.read_csv(self.stockname + "_{}.csv".format(mode))
+        self.df_trends = pd.read_csv(self.trendname + "_{}_candlesticks.csv".format(mode))
 
         # Converting String to datetime
         self.data_stocks_date = self.df_stocks['Date']
@@ -118,7 +115,7 @@ class StockTradingEnv:
         im = self.compute_im(self.index, self.window_size)
         self.state = im
 
-        return self.state, self.date_stocks_range, self.stockname
+        return self.state, self.date_stocks_range, self.filename
 
     def step(self, action, mode):
 
@@ -154,7 +151,7 @@ class StockTradingEnv:
                 action_actual = 'Buy'
 
             # Creating directory if it doesn't exist
-            graphpath = 'Results/{} ({}). Window Size - {}/Test Images/'.format(self.stockname, self.date_stocks_range,
+            graphpath = 'Results/{} ({}). Window Size - {}/Test Images/'.format(self.filename, self.date_stocks_range,
                                                                                 self.window_size)
             if not os.path.exists(os.path.dirname(graphpath)):
                 try:
