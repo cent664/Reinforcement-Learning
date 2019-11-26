@@ -22,4 +22,4 @@ Assignments and Project from Reinforcement Learning (6890)
 
 **Poster**
 
-![Poster](/Project/images/Capture.PNG)
+![Poster](/Project/images/Agnibh_Dasgupta_poster.png)
