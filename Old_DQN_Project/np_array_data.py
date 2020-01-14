@@ -156,17 +156,17 @@ def save_to_file(final_array):
 if __name__ == '__main__':  # To run tests, is not accessed during main function call
 
     # Parameters
-    current_index = 16  # Index to get data from
+    current_index = 200  # Index to get data from
     window_size = 16  # Number of data points in the state
     static_image_size = (window_size, window_size)  # Shape on input image into the CNN.
-    mode = 'test'
+    mode = 'train'
 
     if mode == 'train':
         df = pd.read_csv("S&P500_train.csv")
         steps = 200
     else:
-        # df = pd.read_csv("S&P500_test.csv")
-        df = pd.read_csv("Stockmarket crash_candlesticks.csv")
+        df = pd.read_csv("S&P500_test.csv")
+        # df = pd.read_csv("Stockmarket crash_candlesticks.csv")
         steps = 20
 
     date = df['Date']
