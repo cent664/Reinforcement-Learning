@@ -1,0 +1,13 @@
+After batch is better
+Decay rate and gamma don't really matter much
+1 year 10 episodes might be prone to overfitting, train less epochs?
+5 year, 10 ep seems optimal
+16 x 16
+Filter size, strides, window size
+
+TO DO:
+graph alignment fix
+Try simpler representation
+Better keywords
+Live data
+Ensemble learning
