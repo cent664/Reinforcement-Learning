@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 def aggregate(df):
     df.drop_duplicates(subset="date", keep='first', inplace=True)
     time = df["date"].values
-    data = df["Scale_Stockmarket crash"].values
+    data = df["Scale_{}".format(trend)].values
     temp_data = 0
     count = 0
     temp_data_list = []
@@ -34,7 +34,7 @@ def aggregate(df):
 def convert(df, trend, stock, mode):
     df.drop_duplicates(subset="date", keep='first', inplace=True)
     time = df["date"].values
-    data = df["Scale_Stockmarket crash"].values
+    data = df["Scale_{}".format(trend)].values
 
     date = []
     open = []
@@ -98,8 +98,8 @@ def convert(df, trend, stock, mode):
 
 
 if __name__ == '__main__':
-    trend = "Stockmarket crash"
-    stock = "S&P500"
+    trend = "Bitcoein"
+    stock = "BTC"
     mode = "Test"
     trends_df = pd.read_csv('{}_{}.csv'.format(trend, mode))
     # aggregate(trends_df)

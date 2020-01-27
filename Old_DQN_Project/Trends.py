@@ -18,7 +18,7 @@ def get_trends(keyword, mode):
         end_date = datetime.date(2019, 1, 1)  # Y-M-D
     else:
         start_date = datetime.date(2019, 1, 1)  # Y-M-D
-        end_date = datetime.date(2019, 11, 1)  # Y-M-D
+        end_date = datetime.date(2020, 1, 1)  # Y-M-D
 
     """Since we want weekly data for our query, we will create lists which include
     the weekly start and end date in the specified timeframe - 2018.01.01 to 2019.1.01"""
@@ -118,6 +118,6 @@ def get_trends(keyword, mode):
 
 
 if __name__ == '__main__':
-    trend = "Stockmarket crash"
+    trend = "Bitcoin"
     mode = 'Test'
     get_trends(trend, mode)
