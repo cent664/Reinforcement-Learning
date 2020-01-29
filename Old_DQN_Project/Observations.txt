@@ -6,6 +6,7 @@ Decay rate and gamma don't really matter much
 Filter size, strides, window size
 
 TO DO:
+maybe try different trends time frames? (not 10am - 4pm)
 graph alignment fix
 Try simpler representation
 Better keywords
