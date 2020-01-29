@@ -8,7 +8,6 @@ Stale trends candlesticks (Stockmarket crash) - Inconsistent results, not sure i
 
 TO DO:
 
-Graph alignment fix
 Try simpler representation
 Better keywords
 Live data and automation
