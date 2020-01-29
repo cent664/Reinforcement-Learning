@@ -1,14 +1,18 @@
 After batch is better
 Decay rate and gamma don't really matter much
-1 year 10 episodes might be prone to overfitting, train less epochs?
+1 year 10 episodes might be prone to overfitting, train less epochs? TEST AFTER STABLE RESULTS
 5 year, 10 ep seems optimal
-16 x 16
-Filter size, strides, window size
+Filter size, window size
+Volatile trends candlesticks (Stockmarket crash) - Inconsistent results, not sure if its learning
+Stale trends candlesticks (Stockmarket crash) - Inconsistent results, not sure if its learning
 
 TO DO:
-maybe try different trends time frames? (not 10am - 4pm)
-graph alignment fix
-Try simpler representation
-Better keywords
+
 Live data
 Ensemble learning
+Try simpler representation
+
+different filter sizes?
+maybe try different trends time frames? (not 10am - 4pm)
+graph alignment fix
+Better keywords
