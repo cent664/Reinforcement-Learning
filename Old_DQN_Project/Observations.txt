@@ -10,10 +10,9 @@ Stale trends candlesticks (Bitcoin) - Seems to do better but still testing, also
 
 TO DO:
 
-Try simpler representation
-Better keywords (7, 8)
-Live data and automation
-Ensemble learning
+Automate everything
 
+Better keywords (7, 8)
+Ensemble learning
 different filter sizes?
 maybe try different trends time frames? (not 10am - 4pm)
