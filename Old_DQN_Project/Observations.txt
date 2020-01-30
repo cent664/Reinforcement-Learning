@@ -11,7 +11,7 @@ Stale trends candlesticks (Bitcoin) - Seems to do better but still testing, also
 TO DO:
 
 Try simpler representation
-Better keywords (6, 7)
+Better keywords (7, 8)
 Live data and automation
 Ensemble learning
 
