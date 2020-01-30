@@ -3,6 +3,7 @@ Decay rate and gamma don't really matter much
 1 year 10 episodes might be prone to overfitting, train less epochs? TEST AFTER STABLE RESULTS
 5 year, 10 ep seems optimal
 Filter size, window size
+Training showed consistent improvement when using just stock images. Stock + Trend is inconsistent.
 Volatile trends candlesticks (Stockmarket crash) - Inconsistent results, not sure if its learning
 Stale trends candlesticks (Bitcoin) - Seems to do better but still testing, also testing simple representation
 
