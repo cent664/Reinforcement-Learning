@@ -4,12 +4,13 @@ Decay rate and gamma don't really matter much
 5 year, 10 ep seems optimal
 Filter size, window size
 Volatile trends candlesticks (Stockmarket crash) - Inconsistent results, not sure if its learning
-Stale trends candlesticks (Stockmarket crash) - Inconsistent results, not sure if its learning
+Stale trends candlesticks (Bitcoin) - Seems to do better but still testing, also testing simple representation
+
 
 TO DO:
 
 Try simpler representation
-Better keywords
+Better keywords (6, 7)
 Live data and automation
 Ensemble learning
 
