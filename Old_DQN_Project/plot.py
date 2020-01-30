@@ -7,8 +7,8 @@ import datetime
 import numpy as np
 from Candlesticks import candle
 import os
-import os
 import errno
+from np_array_data import compute_array, reduce_dim, coloring, make_graph
 
 
 # To plot the steps vs cumulative reward
@@ -19,7 +19,7 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
 
     if mode == 'Train':
 
-        df = pd.read_csv(stockname + '_{}.csv'.format(mode))
+        df = pd.read_csv(stockname + '_Stock_{}.csv'.format(mode))
 
         # ------------------------------------------ CUMULATIVE REWARD ------------------------------------------
         # fig = plt.figure(figsize=(16.5, 10.0))
@@ -44,7 +44,7 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
 
     if mode == 'Test':
 
-        df = pd.read_csv(stockname + '_{}.csv'.format(mode))
+        df = pd.read_csv(stockname + '_Stock_{}.csv'.format(mode))
 
         # ------------------------------------------ 1. CUMULATIVE REWARD ------------------------------------------
         fig = plt.figure(figsize=(16.5, 10.0))
@@ -125,51 +125,63 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
         # ------------------------------------------ 4. CANDLESTICKS ------------------------------------------
 
         start = window_size
+        ax4 = plt.subplot2grid((4, 1), (3, 0))
+
+        test_array = []
+
+        # Creating the array
+        for i in range(window_size, window_size + len(steps)):
+            if i < 0:
+                print("Indexing error")
+                break
+
+            data = df[['Low', 'Close', 'Open', 'High']].iloc[i].values
+
+            low = data[0]
+            close = data[1]
+            open = data[2]
+            high = data[3]
+
+            test_array.append([high, close, open, low])
+        test_array = np.transpose(test_array)
 
         # Converting date to pandas datetime format
         df['Date'] = pd.to_datetime(df['Date'])
         og_dates = []
 
         # Converting datetime objects to the correct date format
-        for i in range(0, len(df['Date'])):
+        for i in range(window_size, window_size + len(steps)):
             og_dates.append(df['Date'][i].strftime('%d-%m-%Y'))
 
-        df["Date"] = df["Date"].apply(mdates.date2num)
+        # Graph drawing parameters
+        w = 0.6
+        lw = 0.5
 
-        # Creating required data in new DataFrame OHLC
-        ohlc = df[['Date', 'Open', 'High', 'Low', 'Close']]
+        for j in range(0, len(test_array[0])):  # 0 -> Total number of columns
+            for i in range(0, len(test_array)):  # 0 -> Total number of rows
 
-        # In case you want to check for shorter timespan
-        ohlc = ohlc[start: start + len(steps)]
-        ohlc = ohlc.values
-        ohlc = ohlc.tolist()
+                low = test_array[len(test_array) - 1][j]
+                open = test_array[len(test_array) - 2][j]
+                close = test_array[len(test_array) - 3][j]
+                high = test_array[len(test_array) - 4][j]
 
-        # Replacing x axis values with consecutive dates to eliminate gaps
-        for i in range(0, len(steps)):
-            ohlc[i][0] = ohlc[0][0] + i
-            ohlc[i] = tuple(ohlc[i])
-
-        ax4 = plt.subplot2grid((4, 1), (3, 0))
-
-        # Plot the candlesticks
-        candlestick_ohlc(ax4, ohlc, width=.6)
+            # Coloring the graph based on open and close differences
+            if close > open:
+                ax4.bar(og_dates[j], close - open, width=w, bottom=open, color='Black',
+                        linewidth=lw)
+            else:
+                ax4.bar(og_dates[j], open - close, width=w, bottom=close, color='Red',
+                        linewidth=lw)
 
         for label in ax4.xaxis.get_ticklabels():
             label.set_rotation(45)
 
-        ax4.xaxis.set_major_formatter(mdates.DateFormatter('%d-%m-%Y'))
         ax4.xaxis.set_major_locator(mticker.MaxNLocator(len(steps) + 3))
         ax4.grid(True)
 
         plt.xlabel('Date')
         plt.ylabel('Price ($)')
         plt.title('S&P500')
-
-        # Replacing x labels with the correct dates
-        locs, labels = plt.xticks()
-        locs = locs[1:]
-        plt.xticks(locs, list(og_dates[start - 1: start + len(steps) + 1]))
-        plt.subplots_adjust(left=0.09, bottom=0.20, right=0.94, top=0.90, wspace=0.2, hspace=0)
 
         # Creating directory if it doesn't exist
         if not os.path.exists(os.path.dirname(graphpath)):
@@ -178,6 +190,7 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
             except OSError as exc:  # Guard against race condition
                 if exc.errno != errno.EEXIST:
                     raise
+
         # Saving the graph
         plt.savefig(graphpath + '{}ing.png'.format(mode))
 

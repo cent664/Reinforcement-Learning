@@ -74,16 +74,15 @@ def convert(df, trend, stock, mode):
     # Creating the ohlc dataframe from open, high, low, close values just obtained
     df = pd.DataFrame(list(zip(date, open, high, low, close)), columns=['Date', 'Open', 'High', 'Low', 'Close'])
 
-    df_stock = pd.read_csv('{}_{}.csv'.format(stock, mode))
+    df_stock = pd.read_csv('{}_Stock_{}.csv'.format(stock, mode))
     df_trend = df.copy()
 
-    df_trend.to_csv("{}_{}_candlesticks.csv".format(trend, mode))
+    # df_trend.to_csv("{}_Trend_{}_candlesticks.csv".format(trend, mode))
 
     # Removing non-intersecting dates between stock and trends data
     i = 0
     j = 0
-    while i < len(df_stock):
-        print(i, j)
+    while i < len(df_stock) - 1:
         if df_stock['Date'][i] < df_trend['Date'][j]:
             df_stock.drop([i], inplace=True)
             j -= 1
@@ -94,13 +93,13 @@ def convert(df, trend, stock, mode):
         j += 1
 
     # Saving final data file to generate images from
-    df_trend.to_csv("{}_{}_candlesticks.csv".format(trend, mode))
+    df_trend.to_csv("{}_Trend_{}_candlesticks.csv".format(trend, mode))
 
 
 if __name__ == '__main__':
-    trend = "Bitcoein"
+    trend = "Bitcoin"
     stock = "BTC"
-    mode = "Test"
-    trends_df = pd.read_csv('{}_{}.csv'.format(trend, mode))
+    mode = "Train"
+    trends_df = pd.read_csv('{}_Trend_{}.csv'.format(trend, mode))
     # aggregate(trends_df)
     convert(trends_df, trend, stock, mode)

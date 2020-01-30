@@ -241,7 +241,7 @@ def DQN_Agent(mode, stock, trend, window_size):
             # print("Episode: {}. Score : {}".format(episode, score[episode]))
             episode += 1
 
-        # plt.show()
+        plt.show()
 
 
 def visualization(window_size):  # To visualize intermediate layers
@@ -291,13 +291,14 @@ def visualization(window_size):  # To visualize intermediate layers
 if __name__ == "__main__":
     mode = 'Test'
     stock = 'S&P500'
-    trend = 'Stockmarket crash'
+    trend = 'S&P500'
     window_size = 16
     DQN_Agent(mode, stock, trend, window_size)
     # visualization(window_size)
 
 
 #TODO:
+# 1 year, 6 epochs - 5 year, 10 epochs
 # Batches
 # Include week, month, more months image sets
 # Upload env to gym

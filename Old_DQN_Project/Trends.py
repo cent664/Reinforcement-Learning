@@ -108,7 +108,7 @@ def get_trends(keyword, mode):
     df["Scale_{}".format(keyword)] = df["Scale_{}".format(keyword)]/max_interest * 100
 
     # print(df.describe())
-    df.to_csv('{}_{}.csv'.format(keyword, mode))
+    df.to_csv('{}_Trend_{}.csv'.format(keyword, mode))
     plt.plot(df)
 
     plt.xlabel('Time')
@@ -118,6 +118,13 @@ def get_trends(keyword, mode):
 
 
 if __name__ == '__main__':
-    trend = "Bitcoin"
+    trend = 'Bitcoin'
     mode = 'Test'
+    get_trends(trend, mode)
+    mode = 'Train'
+    get_trends(trend, mode)
+    trend = 'S&P500'
+    mode = 'Test'
+    get_trends(trend, mode)
+    mode = 'Train'
     get_trends(trend, mode)

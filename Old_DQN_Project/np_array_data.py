@@ -69,19 +69,9 @@ def make_graph(test_array, current_index, window_size):
 
         # Coloring the graph based on open and close differences
         if close > open:
-            plt.bar(current_index - window_size + 1 + j, open - low, width=w, bottom=low, color='#be2409',
-                    edgecolor='Black', linewidth=lw)
-            plt.bar(current_index - window_size + 1 + j, close - open, width=w, bottom=open, color='White',
-                    edgecolor='Black', linewidth=lw)
-            plt.bar(current_index - window_size + 1 + j, high - close, width=w, bottom=close, color='#fddc54',
-                    edgecolor='Black', linewidth=lw)
+            plt.bar(current_index - window_size + 1 + j, close - open, width=w, bottom=open, color="Red", linewidth=lw)
         else:
-            plt.bar(current_index - window_size + 1 + j, close - low, width=w, bottom=low, color='#be2409',
-                    edgecolor='Black', linewidth=lw)
-            plt.bar(current_index - window_size + 1 + j, open - close, width=w, bottom=close, color='Black',
-                    edgecolor='Black', linewidth=lw)
-            plt.bar(current_index - window_size + 1 + j, high - open, width=w, bottom=open, color='#fddc54',
-                    edgecolor='Black', linewidth=lw)
+            plt.bar(current_index - window_size + 1 + j, open - close, width=w, bottom=close, color='Black', linewidth=lw)
 
 
     plt.xlabel('Days')
@@ -159,14 +149,13 @@ if __name__ == '__main__':  # To run tests, is not accessed during main function
     current_index = 200  # Index to get data from
     window_size = 16  # Number of data points in the state
     static_image_size = (window_size, window_size)  # Shape on input image into the CNN.
-    mode = 'train'
+    mode = 'Test'
 
-    if mode == 'train':
-        df = pd.read_csv("S&P500_train.csv")
+    if mode == 'Train':
+        df = pd.read_csv("S&P500_Stock_Train.csv")
         steps = 200
     else:
-        df = pd.read_csv("S&P500_test.csv")
-        # df = pd.read_csv("Stockmarket crash_candlesticks.csv")
+        df = pd.read_csv("S&P500_Stock_Test.csv")
         steps = 20
 
     date = df['Date']
@@ -190,12 +179,12 @@ if __name__ == '__main__':  # To run tests, is not accessed during main function
     scaling_factor = scaling_factor / 2  # To account for the shift from centering close
     print("Scaling Factor = ", scaling_factor)
 
-    test_array = reduce_dim(test_array, scaling_factor)
+    # test_array = reduce_dim(test_array, scaling_factor)
     print(test_array)
 
     # To plot a stacked bar graph based on the test array for visualization
     make_graph(test_array, current_index, window_size)
-    # plt.show()
+    plt.show()
 
     # Creating the final colored 2D array representation of the graph
     final_array = coloring(test_array, static_image_size)

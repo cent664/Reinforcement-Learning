@@ -37,8 +37,8 @@ class StockTradingEnv:
         self.filename = self.stockname + "_" + self.trendname
 
         # Reading the data
-        self.df_stocks = pd.read_csv(self.stockname + "_{}.csv".format(mode))
-        self.df_trends = pd.read_csv(self.trendname + "_{}_candlesticks.csv".format(mode))
+        self.df_stocks = pd.read_csv(self.stockname + "_Stock_{}.csv".format(mode))
+        self.df_trends = pd.read_csv(self.trendname + "_Trend_{}_candlesticks.csv".format(mode))
 
         # Converting String to datetime
         self.data_stocks_date = self.df_stocks['Date']
