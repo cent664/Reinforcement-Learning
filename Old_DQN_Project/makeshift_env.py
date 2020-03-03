@@ -37,8 +37,15 @@ class StockTradingEnv:
         self.filename = self.stockname + "_" + self.trendname
 
         # Reading the data
-        self.df_stocks = pd.read_csv(self.stockname + "_Stock_{}.csv".format(mode))
-        self.df_trends = pd.read_csv(self.trendname + "_Trend_{}_candlesticks.csv".format(mode))
+        self.df_stocks = pd.read_csv("{}_Stock.csv".format(self.stockname))
+        self.df_trends = pd.read_csv("{}_Trend.csv".format(self.trendname))
+
+        if mode == 'Train':
+            self.df_stocks = self.df_stocks[len(self.df_stocks) - (window_size + steps + 1), len(self.df_stocks) - 1]
+            self.df_trends = self.df_trends[len(self.df_trends) - (window_size + steps + 1), len(self.df_trends) - 1]
+        else:
+            self.df_stocks = self.df_stocks[len(self.df_stocks) - (window_size + steps), len(self.df_stocks)]
+            self.df_trends = self.df_trends[len(self.df_trends) - (window_size + steps), len(self.df_trends)]
 
         # Converting String to datetime
         self.data_stocks_date = self.df_stocks['Date']
@@ -93,12 +100,12 @@ class StockTradingEnv:
         # Stock image
         test_array = compute_array(self.df_stocks, current_price_index, window_size)
         test_array = reduce_dim(test_array, self.stocks_scaling_factor)
-        stocks_im_data = coloring(test_array, self.static_image_size)
+        stocks_im_data = coloring(test_array, self.static_image_size, 'Candlesticks')
 
         # Trend image
         test_array = compute_array(self.df_trends, current_price_index, window_size)
         test_array = reduce_dim(test_array, self.trends_scaling_factor)
-        trends_im_data = coloring(test_array, self.static_image_size)
+        trends_im_data = coloring(test_array, self.static_image_size, 'Simple')
 
         trends_im_data = np.expand_dims(trends_im_data, axis=0)
         stocks_im_data = np.expand_dims(stocks_im_data, axis=0)

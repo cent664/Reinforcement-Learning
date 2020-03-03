@@ -4,21 +4,27 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+from Cleaning import convert_and_clean
+import time
+import random
 
 
-def get_trends(keyword, mode):
+def get_trends(keyword, days):
     i = 0
     waiting_time = 60
 
-    print("Trend keyword:", type(keyword))
     """Specify start and end date as well es the required keyword for your query"""
+    print("Trend keyword: ", type(keyword))
 
-    if mode == 'Train':
-        start_date = datetime.date(2018, 1, 1)  # Y-M-D
-        end_date = datetime.date(2019, 1, 1)  # Y-M-D
-    else:
-        start_date = datetime.date(2019, 1, 1)  # Y-M-D
-        end_date = datetime.date(2020, 1, 1)  # Y-M-D
+    """Calculating start date from end date, based on given interval"""
+    end_date = datetime.datetime.date(datetime.datetime.now())
+    # end_date = datetime.date(2020, 1, 1)  # This (-365) works
+    # end_date = datetime.date(2020, 3, 3)  # This (-365) does not work
+    # end_date = end_date - datetime.timedelta(days=8)  # This (-365, -220) does not work
+    end_date = end_date - datetime.timedelta(days=20)  # This (-365) works
+    print("Today's date: ", end_date)
+    start_date = end_date - datetime.timedelta(days=days)
+    print(start_date, end_date)
 
     """Since we want weekly data for our query, we will create lists which include
     the weekly start and end date in the specified timeframe - 2018.01.01 to 2019.1.01"""
@@ -59,6 +65,7 @@ def get_trends(keyword, mode):
             interest = p.interest_over_time()
             interest_list.append(interest)
             print("GoogleTrends Call {} of {} : Timeframe: {} ".format(i + 1, len(weekly_date_list) - 1, key))
+            # time.sleep(random.randint(5, 10))  # In case of time outs
         except:
             print("Timed out. Retrying in {} secs...".format(waiting_time))
             time.sleep(waiting_time)
@@ -108,23 +115,16 @@ def get_trends(keyword, mode):
     df["Scale_{}".format(keyword)] = df["Scale_{}".format(keyword)]/max_interest * 100
 
     # print(df.describe())
-    df.to_csv('{}_Trend_{}.csv'.format(keyword, mode))
-    plt.plot(df)
+    df.to_csv(r'C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\{}_Trend.csv'.format(keyword))
 
-    plt.xlabel('Time')
-    plt.ylabel('Number of Hits')
-    plt.title(keyword)
+    # plt.plot(df)
+    # plt.xlabel('Time')
+    # plt.ylabel('Number of Hits')
+    # plt.title(keyword)
     # plt.show()
 
 
 if __name__ == '__main__':
-    trend = 'Bitcoin'
-    mode = 'Test'
-    get_trends(trend, mode)
-    mode = 'Train'
-    get_trends(trend, mode)
     trend = 'S&P500'
-    mode = 'Test'
-    get_trends(trend, mode)
-    mode = 'Train'
-    get_trends(trend, mode)
+    days = 365
+    get_trends(trend, days)

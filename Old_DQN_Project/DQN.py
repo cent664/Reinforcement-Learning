@@ -12,6 +12,11 @@ from utils import timeit
 from PIL import Image
 import os
 import errno
+from Stocks import scraping
+from Trends import get_trends
+from Rename import rename_file
+from Cleaning import convert_and_clean
+import pandas as pd
 
 # Parameters
 
@@ -26,9 +31,6 @@ batch_size = 32  # Batch size for random sampling in the memory pool
 exploration_max = 1.0  # Initial exploration rate
 exploration_min = 0.01  # Min value of exploration rate post decay
 exploration_decay = 0.995  # Exploration rate decay rate
-
-episodes = 10
-steps = 200
 
 
 class DQNSolver:
@@ -106,6 +108,9 @@ def DQN_Agent(mode, stock, trend, window_size):
 
     # ------------------------------------------------ TRAINING --------------------------------------------------------
     if mode == 'Train':
+        episodes = 10
+        steps = 200
+
         print('\nTraining...\n')
 
         # DQN Stocks
@@ -177,7 +182,7 @@ def DQN_Agent(mode, stock, trend, window_size):
     # ------------------------------------------------ TESTING ---------------------------------------------------------
     if mode == 'Test':
         test_episodes = 1
-        test_steps = 20
+        test_steps = 1
 
         print('\nTesting...\n')
 
@@ -288,12 +293,42 @@ def visualization(window_size):  # To visualize intermediate layers
         image_temp = Image.fromarray(np.uint8(image_temp), 'L')
         image_temp.save(path + "{}.bmp".format(i))
 
+
 if __name__ == "__main__":
-    mode = 'Test'
     stock = 'S&P500'
     trend = 'S&P500'
+    mode = 'Train'
+
+    # Downloading stock data
+    scraping(stock)
+
+    # Defining input directory (post download) and target directory (post renaming)
+    input_dir = r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\Data"
+    target = r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\{}_Stock.csv".format(stock)
+
+    # Renaming and saving
+    rename_file(input_dir, target)
+
+    # Downloading trend data
+    days_to_be_scraped = 365
+    get_trends(trend, days_to_be_scraped)
+
+    # Converting trends data to candlesticks, truncating and cleaning both data files
+    training_set = 255
+    testing_set = 1
+    final_length = training_set + testing_set
+    stock_df = pd.read_csv('{}_Stock.csv'.format(stock))
+    trend_df = pd.read_csv('{}_Trend.csv'.format(trend))
+
+    # Converts trends data to candlesticks and cleans both files
+    convert_and_clean(stock_df, trend_df, trend, stock, final_length)
+
+    """ ----------------------------------------- ACTUAL ALGORITHM ------------------------------------------------- """
     window_size = 16
-    DQN_Agent(mode, stock, trend, window_size)
+    # mode = 'Train'
+    # DQN_Agent(mode, stock, trend, window_size)
+    # mode = 'Test'
+    # DQN_Agent(mode, stock, trend, window_size)
     # visualization(window_size)
 
 
@@ -304,3 +339,4 @@ if __name__ == "__main__":
 # Upload env to gym
 # MAIN: Test reward structure, different image sizes, volume and holdings or not
 # Clean redundant variables and calls
+# Steps

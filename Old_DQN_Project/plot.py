@@ -18,8 +18,8 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
     stockname, _ = filename.split("_")
 
     if mode == 'Train':
-
-        df = pd.read_csv(stockname + '_Stock_{}.csv'.format(mode))
+        df = pd.read_csv('{}_Stock.csv'.format(stockname))
+        df = df[len(df) - (window_size + len(steps) + 1), len(df) - 1]
 
         # ------------------------------------------ CUMULATIVE REWARD ------------------------------------------
         # fig = plt.figure(figsize=(16.5, 10.0))
@@ -43,8 +43,8 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
         saving_actions(episode, graphpath, steps, actions, rewards, mode)
 
     if mode == 'Test':
-
-        df = pd.read_csv(stockname + '_Stock_{}.csv'.format(mode))
+        df = pd.read_csv('{}_Stock.csv'.format(stockname))
+        df = df[len(df) - (window_size + len(steps)), len(df)]  # Last 'window size' number of days, including today
 
         # ------------------------------------------ 1. CUMULATIVE REWARD ------------------------------------------
         fig = plt.figure(figsize=(16.5, 10.0))

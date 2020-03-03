@@ -79,7 +79,7 @@ def make_graph(test_array, current_index, window_size):
     plt.title('Day vs Price Range')
 
 
-def coloring(test_array, static_image_size):
+def coloring(test_array, static_image_size, mode):
 
     # Dimensions of the final array
     columns = len(test_array[0])  # window_size
@@ -99,31 +99,36 @@ def coloring(test_array, static_image_size):
         close = test_array[len(test_array) - 3][j] + int(shift)
         high = test_array[len(test_array) - 4][j] + int(shift)
 
-        if close > open:
-            for i in range(close, high + 1):
-                if static_image_size[0] > i >= 0:
-                   final_array[i][j] += 106
+        if mode == 'Candlesticks':
+            if close > open:
+                for i in range(close, high + 1):
+                    if static_image_size[0] > i >= 0:
+                       final_array[i][j] += 106
 
-            for i in range(open, close + 1):
-                if static_image_size[0] > i >= 0:
-                    final_array[i][j] += 139
+                for i in range(open, close + 1):
+                    if static_image_size[0] > i >= 0:
+                        final_array[i][j] += 139
 
-            for i in range(low, open + 1):
-                if static_image_size[0] > i >= 0:
-                    final_array[i][j] += 69
+                for i in range(low, open + 1):
+                    if static_image_size[0] > i >= 0:
+                        final_array[i][j] += 69
 
-        else:
-            for i in range(open, high + 1):
-                if static_image_size[0] > i >= 0:
-                    final_array[i][j] += 106
+            else:
+                for i in range(open, high + 1):
+                    if static_image_size[0] > i >= 0:
+                        final_array[i][j] += 106
 
-            for i in range(close, open + 1):
-                if static_image_size[0] > i >= 0:
-                    final_array[i][j] += 36
+                for i in range(close, open + 1):
+                    if static_image_size[0] > i >= 0:
+                        final_array[i][j] += 36
 
-            for i in range(low, close + 1):
-                if static_image_size[0] > i >= 0:
-                    final_array[i][j] += 69
+                for i in range(low, close + 1):
+                    if static_image_size[0] > i >= 0:
+                        final_array[i][j] += 69
+
+        elif mode == 'Simple':
+            if static_image_size[0] > high >= 0:
+                final_array[high][j] += 255
 
     final_array = np.flip(final_array, axis=0)
     return(final_array)
@@ -179,7 +184,7 @@ if __name__ == '__main__':  # To run tests, is not accessed during main function
     scaling_factor = scaling_factor / 2  # To account for the shift from centering close
     print("Scaling Factor = ", scaling_factor)
 
-    # test_array = reduce_dim(test_array, scaling_factor)
+    test_array = reduce_dim(test_array, scaling_factor)
     print(test_array)
 
     # To plot a stacked bar graph based on the test array for visualization
@@ -187,7 +192,7 @@ if __name__ == '__main__':  # To run tests, is not accessed during main function
     plt.show()
 
     # Creating the final colored 2D array representation of the graph
-    final_array = coloring(test_array, static_image_size)
+    final_array = coloring(test_array, static_image_size, 'Candlesticks')
 
     # To check if I've got the pixel values correctly
     save_to_file(final_array)

@@ -1,7 +1,7 @@
 from pytrends.request import TrendReq
 
 # Login to Google. Only need to run this once, the rest of requests will use the same session.
-pytrend = TrendReq(hl='en-US', tz=360)
+pytrend = TrendReq(hl='en-US', tz=360, timeout=(10, 25), proxies=['https://34.203.233.13:80', 'https://35.201.123.31:880'], retries=2, backoff_factor=0.1)
 
 print("pytrend"), pytrend
 # Create payload and capture API tokens. Only needed for interest_over_time(), interest_by_region() & related_queries()
