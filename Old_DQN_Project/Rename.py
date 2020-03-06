@@ -3,7 +3,7 @@ import os
 
 def rename_file(input_dir, target):
     try:
-        os.remove(target)
+        os.remove(target)  # Deleting existing copies of stock data in the Data folder
         print("Updating previous stock data with new one.")
     except:
         print("No previous files exist. Fresh start.")
@@ -16,7 +16,7 @@ def rename_file(input_dir, target):
 
     if ".csv" not in source:
         raise TypeError(".csv not found")
-    os.rename(source, target)
+    os.rename(source, target)  # Renaming and saving the data in the main directory
 
 
 if __name__ == '__main__':

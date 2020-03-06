@@ -9,25 +9,25 @@ import time
 import random
 
 
-def get_trends(keyword, days):
+def get_trends(keyword, days, breakpointdays):
     i = 0
     waiting_time = 60
 
     """Specify start and end date as well es the required keyword for your query"""
     print("Trend keyword: ", type(keyword))
 
+    """Enough data could not be scraped in one go, so the scraping was split into 2 parts (#1 and #2)"""
+
+    # 1 - Fetching 365 days worth of data, going back from (today's date - 20(breakpointdays) days)
     """Calculating start date from end date, based on given interval"""
     end_date = datetime.datetime.date(datetime.datetime.now())
-    # end_date = datetime.date(2020, 1, 1)  # This (-365) works
-    # end_date = datetime.date(2020, 3, 3)  # This (-365) does not work
-    # end_date = end_date - datetime.timedelta(days=8)  # This (-365, -220) does not work
-    end_date = end_date - datetime.timedelta(days=20)  # This (-365) works
+    end_date = end_date - datetime.timedelta(days=breakpointdays)
     print("Today's date: ", end_date)
     start_date = end_date - datetime.timedelta(days=days)
     print(start_date, end_date)
 
     """Since we want weekly data for our query, we will create lists which include
-    the weekly start and end date in the specified timeframe - 2018.01.01 to 2019.1.01"""
+    the weekly start and end date."""
 
     weekly_date_list = []
 
@@ -65,7 +65,59 @@ def get_trends(keyword, days):
             interest = p.interest_over_time()
             interest_list.append(interest)
             print("GoogleTrends Call {} of {} : Timeframe: {} ".format(i + 1, len(weekly_date_list) - 1, key))
-            # time.sleep(random.randint(5, 10))  # In case of time outs
+        except:
+            print("Timed out. Retrying in {} secs...".format(waiting_time))
+            time.sleep(waiting_time)
+            i -= 1
+        i += 1
+
+    """--------------------------------------------------------------------------------------------------------------"""
+
+    # 2 - Fetching 20(breakpointdays) days worth of data, going back from today's date
+    """Calculating start date from end date, based on given interval"""
+    end_date = datetime.datetime.date(datetime.datetime.now())
+    print("Today's date: ", end_date)
+    start_date = end_date - datetime.timedelta(days=breakpointdays)
+    print(start_date, end_date)
+
+    """Since we want weekly data for our query, we will create lists which include
+    the weekly start and end date."""
+
+    weekly_date_list = []
+
+    # Adds the start date as first entry in our weekly_date_list
+    start_date_temp = start_date
+    weekly_date_list.append(start_date_temp)
+
+    # This will return in list of weekly datetime.date objects - except the end date
+    while start_date_temp + datetime.timedelta(days=7) <= end_date:
+        start_date_temp += datetime.timedelta(days=7)
+        weekly_date_list.append(start_date_temp)
+
+    # This will add the end date to the weekly_date list. We now have a complete list in the specified time frame
+    if start_date_temp + datetime.timedelta(days=7) > end_date:
+        weekly_date_list.append(end_date)
+
+    print(weekly_date_list)
+
+    """Now we can start to downloading the data via Google Trends API
+    therefore we have to specify a key which includes the start date
+    and the end-date with T00 as string for hourly data request"""
+
+    """This list will contain pandas Dataframes of weekly data with the features "date",
+    "keyword"(which contains weekly scaling between 0 and 100), "isPartial".
+    Up to this point, the scaling is not correct."""
+
+    i = 0
+    # Here we download the data and print the current status of the process
+    while i < len(weekly_date_list) - 1:
+        key = str(weekly_date_list[i]) + "T00 " + str(weekly_date_list[i + 1]) + "T00"
+        try:
+            p = TrendReq()
+            p.build_payload(kw_list=[keyword], timeframe=key)
+            interest = p.interest_over_time()
+            interest_list.append(interest)  # Appending remaining data to existing data in interest_list
+            print("GoogleTrends Call {} of {} : Timeframe: {} ".format(i + 1, len(weekly_date_list) - 1, key))
         except:
             print("Timed out. Retrying in {} secs...".format(waiting_time))
             time.sleep(waiting_time)
@@ -127,4 +179,5 @@ def get_trends(keyword, days):
 if __name__ == '__main__':
     trend = 'S&P500'
     days = 365
-    get_trends(trend, days)
+    breakpointdays = 20
+    get_trends(trend, days, breakpointdays)

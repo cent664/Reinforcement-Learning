@@ -14,12 +14,14 @@ from np_array_data import compute_array, reduce_dim, coloring, make_graph
 # To plot the steps vs cumulative reward
 def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_range, filename, mode):
 
-    graphpath = 'Results/{} ({}). Window Size - {}/'.format(filename, date_range, window_size)
+    # Getting the current date of prediction for folder name
+    folder_name = str(datetime.datetime.date(datetime.datetime.now()) - datetime.timedelta(days=1))
+    graphpath = 'Results/{}/{} ({}). Window Size - {}/'.format(folder_name, filename, date_range, window_size)
     stockname, _ = filename.split("_")
 
     if mode == 'Train':
         df = pd.read_csv('{}_Stock.csv'.format(stockname))
-        df = df[len(df) - (window_size + len(steps) + 1), len(df) - 1]
+        df = df[len(df) - (window_size + len(steps) + 1): len(df) - 1]
 
         # ------------------------------------------ CUMULATIVE REWARD ------------------------------------------
         # fig = plt.figure(figsize=(16.5, 10.0))
@@ -44,7 +46,7 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
 
     if mode == 'Test':
         df = pd.read_csv('{}_Stock.csv'.format(stockname))
-        df = df[len(df) - (window_size + len(steps)), len(df)]  # Last 'window size' number of days, including today
+        df = df[len(df) - (window_size + len(steps)): len(df)]  # Last 'window size' number of days, including today
 
         # ------------------------------------------ 1. CUMULATIVE REWARD ------------------------------------------
         fig = plt.figure(figsize=(16.5, 10.0))
@@ -151,7 +153,7 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
 
         # Converting datetime objects to the correct date format
         for i in range(window_size, window_size + len(steps)):
-            og_dates.append(df['Date'][i].strftime('%d-%m-%Y'))
+            og_dates.append((df['Date'].iloc[i]).strftime('%d-%m-%Y'))
 
         # Graph drawing parameters
         w = 0.6
