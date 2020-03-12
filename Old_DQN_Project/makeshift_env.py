@@ -9,6 +9,7 @@ from np_array_data import compute_array, reduce_dim, coloring
 from Trends import get_trends
 import os
 import errno
+import datetime
 
 
 class StockTradingEnv:
@@ -41,11 +42,11 @@ class StockTradingEnv:
         self.df_trends = pd.read_csv("{}_Trend.csv".format(self.trendname))
 
         if mode == 'Train':
-            self.df_stocks = self.df_stocks[len(self.df_stocks) - (window_size + steps + 1), len(self.df_stocks) - 1]
-            self.df_trends = self.df_trends[len(self.df_trends) - (window_size + steps + 1), len(self.df_trends) - 1]
+            self.df_stocks = self.df_stocks[len(self.df_stocks) - (window_size + steps + 1): len(self.df_stocks) - 1]
+            self.df_trends = self.df_trends[len(self.df_trends) - (window_size + steps + 1): len(self.df_trends) - 1]
         else:
-            self.df_stocks = self.df_stocks[len(self.df_stocks) - (window_size + steps), len(self.df_stocks)]
-            self.df_trends = self.df_trends[len(self.df_trends) - (window_size + steps), len(self.df_trends)]
+            self.df_stocks = self.df_stocks[len(self.df_stocks) - (window_size + steps): len(self.df_stocks)]
+            self.df_trends = self.df_trends[len(self.df_trends) - (window_size + steps): len(self.df_trends)]
 
         # Converting String to datetime
         self.data_stocks_date = self.df_stocks['Date']
@@ -90,8 +91,8 @@ class StockTradingEnv:
         self.trends_scaling_factor = self.trends_scaling_factor / 2  # To account for the shift from centering close
 
         # Calculating the date range of the data in question (used when saving graphs/files)
-        self.start_stocks_date = self.df_stocks['Date'][self.window_size]
-        self.end_stocks_date = self.df_stocks['Date'][self.window_size + steps]
+        self.start_stocks_date = self.df_stocks['Date'].iloc[self.window_size]
+        self.end_stocks_date = self.df_stocks['Date'].iloc[self.window_size + steps - 1]
         self.date_stocks_range = self.start_stocks_date + " to " + self.end_stocks_date
         self.date_stocks_range = self.date_stocks_range.replace('/', '-')
 
@@ -148,7 +149,7 @@ class StockTradingEnv:
             stock_image = Image.fromarray(np.uint8(stock_image), 'L')
             trend_image = Image.fromarray(np.uint8(trend_image), 'L')
 
-            date = self.data_stocks_date[self.index]
+            date = self.data_stocks_date.iloc[self.index]
 
             if action == 0:
                 action_actual = 'Sell'
@@ -157,8 +158,9 @@ class StockTradingEnv:
             if action == 2:
                 action_actual = 'Buy'
 
+            folder_name = str(datetime.datetime.date(datetime.datetime.now()) - datetime.timedelta(days=1))
             # Creating directory if it doesn't exist
-            graphpath = 'Results/{} ({}). Window Size - {}/Test Images/'.format(self.filename, self.date_stocks_range,
+            graphpath = 'Results/{}/{} ({}). Window Size - {}/Test Images/'.format(folder_name, self.filename, self.date_stocks_range,
                                                                                 self.window_size)
             if not os.path.exists(os.path.dirname(graphpath)):
                 try:
