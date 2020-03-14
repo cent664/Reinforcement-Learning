@@ -14,13 +14,13 @@ from np_array_data import compute_array, reduce_dim, coloring, make_graph
 # To plot the steps vs cumulative reward
 def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_range, filename, mode, compile):
 
+    stockname, trendname = filename.split("_")
     # Getting the current date of prediction for folder name
     folder_name = str(datetime.datetime.date(datetime.datetime.now()) - datetime.timedelta(days=1))
     if not compile:
-        graphpath = 'Results/{}/{} ({}). Window Size - {}/'.format(folder_name, filename, date_range, window_size)
+        graphpath = 'Results_{}_{}/{}/{} ({}). Window Size - {}/'.format(stockname, trendname, folder_name, filename, date_range, window_size)
     else:  # if compiling results, save under main folder
-        graphpath = 'Results/{}/'.format(folder_name)
-    stockname, _ = filename.split("_")
+        graphpath = 'Results_{}_{}/{}/'.format(stockname, trendname, folder_name)
     if mode == 'Train':
         df = pd.read_csv('{}_Stock.csv'.format(stockname))
         df = df[len(df) - (window_size + len(steps) + 1): len(df) - 1]
