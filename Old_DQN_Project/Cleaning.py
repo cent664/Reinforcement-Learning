@@ -31,7 +31,7 @@ def aggregate(df):
     plt.show()
 
 
-# To clean hourly data and convert to candlesticks format
+# To clean hourly data, aggregate to daily data and convert to candlesticks format
 def convert_and_clean(df_stock, df_trend, trend, stock, final_length):
     df_trend.drop_duplicates(subset="date", keep='first', inplace=True)
     time = df_trend["date"].values
@@ -75,44 +75,46 @@ def convert_and_clean(df_stock, df_trend, trend, stock, final_length):
     # Creating the ohlc dataframe from open, high, low, close values just obtained
     df_trend = pd.DataFrame(list(zip(date, open, high, low, close)), columns=['Date', 'Open', 'High', 'Low', 'Close'])
 
-    # Removing non-intersecting dates between stock and trends data
-    i = 0
-    j = 0
-    # TODO: Only run -1 before midnight, reduce data points
-    ls = len(df_stock) - 1
+    # To account for holidays
+    if datetime.strptime(df_stock['Date'].iloc[len(df_stock) - 1], '%Y-%m-%d') != datetime.strptime(df_trend['Date'].iloc[len(df_trend) - 1], '%Y-%m-%d'):
+        return False
+    else:
 
-    while i < ls:
-        print(i, j)
-        if datetime.strptime(df_stock['Date'].iloc[i], '%Y-%m-%d') == datetime.strptime(df_trend['Date'].iloc[j], '%Y-%m-%d'):
-            print(df_stock['Date'].iloc[i], df_trend['Date'].iloc[j], "stock = trend")
-            i += 1
-            j += 1
-        # Deleting from stocks
-        elif datetime.strptime(df_stock['Date'].iloc[i], '%Y-%m-%d') < datetime.strptime(df_trend['Date'].iloc[j], '%Y-%m-%d'):
-            print(df_stock['Date'].iloc[i], df_trend['Date'].iloc[j], "stock < trend")
-            df_stock.drop(df_stock.index[i], inplace=True)
-            ls -= 1
-        # Deleting from trends
-        elif datetime.strptime(df_stock['Date'].iloc[i], '%Y-%m-%d') > datetime.strptime(df_trend['Date'].iloc[j], '%Y-%m-%d'):
-            print(df_stock['Date'].iloc[i], df_trend['Date'].iloc[j], "stock > trend")
-            df_trend.drop(df_trend.index[j], inplace=True)
+        i = 0
+        j = 0
+        ls = len(df_stock)
 
-    # TODO: This MUST be equal
-    print(len(df_stock), len(df_trend))
+        # Removing non-intersecting dates between stock and trends data
+        while i < ls:
+            if datetime.strptime(df_stock['Date'].iloc[i], '%Y-%m-%d') == datetime.strptime(df_trend['Date'].iloc[j], '%Y-%m-%d'):
+                # print(df_stock['Date'].iloc[i], df_trend['Date'].iloc[j], "stock = trend")
+                i += 1
+                j += 1
+            # Deleting from stocks
+            elif datetime.strptime(df_stock['Date'].iloc[i], '%Y-%m-%d') < datetime.strptime(df_trend['Date'].iloc[j], '%Y-%m-%d'):
+                # print(df_stock['Date'].iloc[i], df_trend['Date'].iloc[j], "stock < trend")
+                df_stock.drop(df_stock.index[i], inplace=True)
+                ls -= 1
+            # Deleting from trends
+            elif datetime.strptime(df_stock['Date'].iloc[i], '%Y-%m-%d') > datetime.strptime(df_trend['Date'].iloc[j], '%Y-%m-%d'):
+                # print(df_stock['Date'].iloc[i], df_trend['Date'].iloc[j], "stock > trend")
+                df_trend.drop(df_trend.index[j], inplace=True)
 
-    # Taking the last 'final_length' number of data points
-    df_stock = df_stock[len(df_stock) - final_length:]
-    df_trend = df_trend[len(df_trend) - final_length:]
+        # Taking the last 'final_length' number of data points
+        df_stock = df_stock[len(df_stock) - final_length:]
+        df_trend = df_trend[len(df_trend) - final_length:]
 
-    # Saving final data files to generate images from
-    df_stock.to_csv("{}_Stock.csv".format(stock))
-    df_trend.to_csv("{}_Trend.csv".format(trend))
+        # Saving final data files to generate images from
+        df_stock.to_csv("{}_Stock.csv".format(stock))
+        df_trend.to_csv("{}_Trend.csv".format(trend))
+
+        return True
 
 
 if __name__ == '__main__':
     trend = "S&P500"
     stock = "S&P500"
-    final_length = 256
+    final_length = 217
     stock_df = pd.read_csv('{}_Stock.csv'.format(stock))
     trend_df = pd.read_csv('{}_Trend.csv'.format(trend))
     convert_and_clean(stock_df, trend_df, trend, stock, final_length)

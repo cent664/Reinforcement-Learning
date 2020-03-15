@@ -168,8 +168,9 @@ def DQN_Agent(mode, stock, trend, window_size):
                 dqn_solver.experience_replay(episode)  # Perform experience replay to update the network weights
 
                 if step == steps:
+
                     score.append(cumulative_reward)
-                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, date_range, filename, mode)
+                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, date_range, filename, mode, False)
                     break
                 else:
                     step += 1
@@ -235,10 +236,14 @@ def DQN_Agent(mode, stock, trend, window_size):
                 print("{} {}ing: Reward = {} Cumulative reward = {}".format(step, action_actual, reward, cumulative_reward))
 
                 state = state_next  # Update the state
-
                 if step == test_steps:
                     score.append(cumulative_reward)
-                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, date_range, filename, mode)
+
+                    # Saving plot into to be compiled every 7 days
+                    f = open(r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\TestArea\temp_{}_{}.txt".format(stock, trend), "a")
+                    f.write("{}~{}~{}~{}~{}~{}~{}~{}~{}\n".format(step_x[0], cumulative_reward_y1[0], rewards_y2[0], actions_taken[0], episode, window_size, date_range, filename, mode))
+                    f.close()
+                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, date_range, filename, mode, False)
                     break
                 else:
                     step += 1
@@ -246,7 +251,40 @@ def DQN_Agent(mode, stock, trend, window_size):
             # print("Episode: {}. Score : {}".format(episode, score[episode]))
             episode += 1
 
-        plt.show()
+        # plt.show()
+
+        # Counting the number of folders in results folder
+        folders = 0
+        path = r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\Results_{}_{}".format(stock, trend)
+        for _, dirnames, _ in os.walk(path):
+            folders += len(dirnames)
+
+        if folders % (7*4) == 0:  # if they're 7 days worth of results (or multiples of it - 4 folders for each day)
+            results(stock, trend)  # compile and save a weeks worth of results
+
+
+# To compile the last 7 days results
+def results(stock, trend):
+    f = open(r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\TestArea\temp_{}_{}.txt".format(stock, trend), "r")
+    step_x = []
+    rewards_y2 = []
+    cumulative_reward_y1 = []
+    cumulative_reward = 0
+    actions_taken = []
+    for i in range(7):
+        _, _, reward, action, episode, window_size, date_range, filename, mode = (f.readline()).split("~")
+
+        step_x.append(i+1)
+        rewards_y2.append(float(reward))
+        cumulative_reward += float(reward)
+        cumulative_reward_y1.append(cumulative_reward)
+        actions_taken.append(int(action))
+    mode = mode.strip()  # To get rid of new line
+    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, int(episode), int(window_size), date_range, filename, mode, True)
+    # plt.show()
+    f.close()
+    os.remove(r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\TestArea\temp_{}_{}.txt".format(stock, trend))
+    print("Old file removed! Ready for a new week of predictions.")
 
 
 def visualization(window_size):  # To visualize intermediate layers
@@ -294,11 +332,7 @@ def visualization(window_size):  # To visualize intermediate layers
         image_temp.save(path + "{}.bmp".format(i))
 
 
-if __name__ == "__main__":
-    stock = 'S&P500'
-    trend = 'S&P500'
-    mode = 'Train'
-
+def experiments(stock, trend, window_size):
     # Downloading stock data
     scraping(stock)
 
@@ -311,30 +345,53 @@ if __name__ == "__main__":
 
     # Downloading trend data
     days_to_be_scraped = 365
-    get_trends(trend, days_to_be_scraped)
+    breakpointdays = 20
+    get_trends(trend, days_to_be_scraped, breakpointdays)
 
     # Converting trends data to candlesticks, truncating and cleaning both data files
-    training_set = 255
+    training_set = 200
     testing_set = 1
-    final_length = training_set + testing_set
+    final_length = training_set + testing_set + window_size
     stock_df = pd.read_csv('{}_Stock.csv'.format(stock))
     trend_df = pd.read_csv('{}_Trend.csv'.format(trend))
 
-    # Converts trends data to candlesticks and cleans both files
-    convert_and_clean(stock_df, trend_df, trend, stock, final_length)
+    go = convert_and_clean(stock_df, trend_df, trend, stock, final_length)
+    # go = True
+    if not go:
+        print("Stock Market is closed today!")
+    else:
+        print("Stock Market is open. Let's go:")
+        """ --------------------------------------- ACTUAL ALGORITHM ----------------------------------------------- """
+        mode = 'Train'
+        DQN_Agent(mode, stock, trend, window_size)
+        mode = 'Test'
+        DQN_Agent(mode, stock, trend, window_size)
 
-    """ ----------------------------------------- ACTUAL ALGORITHM ------------------------------------------------- """
-    window_size = 16
-    # mode = 'Train'
-    # DQN_Agent(mode, stock, trend, window_size)
-    # mode = 'Test'
-    # DQN_Agent(mode, stock, trend, window_size)
+
+if __name__ == "__main__":
+    stockname = 'S&P500'
+    trendname = 'S&P500'
+    windowsize = 16
+
+    experiments(stockname, trendname, windowsize)
+    """----------------------------------------- END OF CURRENT EXPERIMENT ------------------------------------------"""
+
+    stockname = 'Amazon'
+    trendname = 'Coronavirus'
+    windowsize = 16
+
+    experiments(stockname, trendname, windowsize)
+    """----------------------------------------- END OF CURRENT EXPERIMENT ------------------------------------------"""
+
     # visualization(window_size)
 
-
 #TODO:
+# Maximize stocks window when scraping
 # 1 year, 6 epochs - 5 year, 10 epochs
 # Batches
+# Filter size?
+# More Training size?
+# Different image sizes
 # Include week, month, more months image sets
 # Upload env to gym
 # MAIN: Test reward structure, different image sizes, volume and holdings or not
