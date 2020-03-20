@@ -17,6 +17,7 @@ from Trends import get_trends
 from Rename import rename_file
 from Cleaning import convert_and_clean
 import pandas as pd
+import datetime
 
 # Parameters
 
@@ -104,7 +105,7 @@ class DQNSolver:
 
 
 @timeit
-def DQN_Agent(mode, stock, trend, window_size):
+def DQN_Agent(mode, stock, trend, date, window_size):
 
     # ------------------------------------------------ TRAINING --------------------------------------------------------
     if mode == 'Train':
@@ -114,7 +115,7 @@ def DQN_Agent(mode, stock, trend, window_size):
         print('\nTraining...\n')
 
         # DQN Stocks
-        env = StockTradingEnv(mode, steps, stock, trend, window_size)  # Object of the environment
+        env = StockTradingEnv(mode, steps, stock, trend, date, window_size)  # Object of the environment
 
         # Get action and observation space
         observation_space = env.observation_space
@@ -170,7 +171,7 @@ def DQN_Agent(mode, stock, trend, window_size):
                 if step == steps:
 
                     score.append(cumulative_reward)
-                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, date_range, filename, mode, False)
+                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, date_range, filename, date, mode, False)
                     break
                 else:
                     step += 1
@@ -188,7 +189,7 @@ def DQN_Agent(mode, stock, trend, window_size):
         print('\nTesting...\n')
 
         # DQN Stocks
-        env = StockTradingEnv(mode, test_steps, stock, trend, window_size)  # Resetting the environment
+        env = StockTradingEnv(mode, test_steps, stock, trend, date, window_size)  # Resetting the environment
 
         # Get action and observation space
         observation_space = env.observation_space
@@ -243,7 +244,7 @@ def DQN_Agent(mode, stock, trend, window_size):
                     f = open(r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\TestArea\temp_{}_{}.txt".format(stock, trend), "a")
                     f.write("{}~{}~{}~{}~{}~{}~{}~{}~{}\n".format(step_x[0], cumulative_reward_y1[0], rewards_y2[0], actions_taken[0], episode, window_size, date_range, filename, mode))
                     f.close()
-                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, date_range, filename, mode, False)
+                    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, date_range, filename, date, mode, False)
                     break
                 else:
                     step += 1
@@ -253,18 +254,18 @@ def DQN_Agent(mode, stock, trend, window_size):
 
         # plt.show()
 
-        # Counting the number of folders in results folder
+        # Counting the number of folders in the current results folder
         folders = 0
         path = r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\Results_{}_{}".format(stock, trend)
         for _, dirnames, _ in os.walk(path):
             folders += len(dirnames)
 
         if folders % (7*4) == 0:  # if they're 7 days worth of results (or multiples of it - 4 folders for each day)
-            results(stock, trend)  # compile and save a weeks worth of results
+            results(stock, trend, date)  # compile and save a weeks worth of results
 
 
 # To compile the last 7 days results
-def results(stock, trend):
+def results(stock, trend, date):
     f = open(r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\TestArea\temp_{}_{}.txt".format(stock, trend), "r")
     step_x = []
     rewards_y2 = []
@@ -280,8 +281,7 @@ def results(stock, trend):
         cumulative_reward_y1.append(cumulative_reward)
         actions_taken.append(int(action))
     mode = mode.strip()  # To get rid of new line
-    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, int(episode), int(window_size), date_range, filename, mode, True)
-    # plt.show()
+    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, int(episode), int(window_size), date_range, filename, date, mode, True)
     f.close()
     os.remove(r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\TestArea\temp_{}_{}.txt".format(stock, trend))
     print("Old file removed! Ready for a new week of predictions.")
@@ -332,7 +332,7 @@ def visualization(window_size):  # To visualize intermediate layers
         image_temp.save(path + "{}.bmp".format(i))
 
 
-def experiments(stock, trend, window_size):
+def experiments(stock, trend, window_size, date_of_prediction):
     # Downloading stock data
     scraping(stock)
 
@@ -345,8 +345,7 @@ def experiments(stock, trend, window_size):
 
     # Downloading trend data
     days_to_be_scraped = 365
-    breakpointdays = 20
-    get_trends(trend, days_to_be_scraped, breakpointdays)
+    get_trends(trend, days_to_be_scraped, date_of_prediction)
 
     # Converting trends data to candlesticks, truncating and cleaning both data files
     training_set = 200
@@ -363,9 +362,9 @@ def experiments(stock, trend, window_size):
         print("Stock Market is open. Let's go:")
         """ --------------------------------------- ACTUAL ALGORITHM ----------------------------------------------- """
         mode = 'Train'
-        DQN_Agent(mode, stock, trend, window_size)
+        DQN_Agent(mode, stock, trend, window_size, date_of_prediction)
         mode = 'Test'
-        DQN_Agent(mode, stock, trend, window_size)
+        DQN_Agent(mode, stock, trend, window_size, date_of_prediction)
 
 
 if __name__ == "__main__":
@@ -373,27 +372,28 @@ if __name__ == "__main__":
     trendname = 'S&P500'
     windowsize = 16
 
-    experiments(stockname, trendname, windowsize)
-    """----------------------------------------- END OF CURRENT EXPERIMENT ------------------------------------------"""
+    # Testing out stuff
+    date_of_prediction = str(datetime.date(2020, 2, 20))  # Y-M-D
+    # mode = 'Train'
+    # DQN_Agent(mode, stockname, trendname, date_of_prediction, windowsize)
+    mode = 'Test'
+    DQN_Agent(mode, stockname, trendname, date_of_prediction, windowsize)
 
-    stockname = 'Amazon'
-    trendname = 'Coronavirus'
-    windowsize = 16
+    # Experiments Automation
+    # date_of_prediction = datetime.datetime.date(datetime.datetime.now()) - datetime.timedelta(days=1)
+    # experiments(stockname, trendname, windowsize, date_of_prediction)
 
-    experiments(stockname, trendname, windowsize)
-    """----------------------------------------- END OF CURRENT EXPERIMENT ------------------------------------------"""
-
+    # Intermediate Layers Visualizatio
     # visualization(window_size)
 
 #TODO:
-# Maximize stocks window when scraping
-# 1 year, 6 epochs - 5 year, 10 epochs
+# HOW TO TEST: Set date of prediction, Download stocks, Run trends, Run Cleaning, Run DQN
+# Friday - 3 good, 3 bad proposals
+# Data padding - not sure how(Google trends doesn't give me hourly resolution data for 28/2-05/3), experiments
+# 1. Intro (problem def - end), 2. Methods 3. Results, 4. Summary and conclusion
+# Train on less data?
+# Decay exploration faster?
+# Train more epochs?
 # Batches
-# Filter size?
-# More Training size?
-# Different image sizes
-# Include week, month, more months image sets
-# Upload env to gym
-# MAIN: Test reward structure, different image sizes, volume and holdings or not
-# Clean redundant variables and calls
-# Steps
+# Filter size? Different image sizes?
+# Using important dates (4th of July) for feature augmentation
