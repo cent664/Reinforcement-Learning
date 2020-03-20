@@ -37,7 +37,7 @@ def scraping(stockname):
 
     download_button = browser.find_element_by_xpath('//span[text()="Download Data"]')  # finding download button
     download_button.click()  # clicking on download
-    time.sleep(random.randint(10, 15))  # In case of time outs
+    time.sleep(random.randint(10, 15))  # To have time to download
 
 
 if __name__ == '__main__':

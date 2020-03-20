@@ -1,22 +1,14 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from mpl_finance import candlestick_ohlc
-import matplotlib.ticker as mticker
-import matplotlib.dates as mdates
-import datetime
 import numpy as np
-from Candlesticks import candle
 import os
 import errno
-from np_array_data import compute_array, reduce_dim, coloring, make_graph
 
 
 # To plot the steps vs cumulative reward
-def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_range, filename, mode, compile):
-
+def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_range, filename, folder_name, mode, compile):
     stockname, trendname = filename.split("_")
     # Getting the current date of prediction for folder name
-    folder_name = str(datetime.datetime.date(datetime.datetime.now()) - datetime.timedelta(days=1))
     if not compile:
         graphpath = 'Results_{}_{}/{}/{} ({}). Window Size - {}/'.format(stockname, trendname, folder_name, filename, date_range, window_size)
     else:  # if compiling results, save under main folder
@@ -50,44 +42,38 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
         df = pd.read_csv('{}_Stock.csv'.format(stockname))
         df = df[len(df) - (window_size + len(steps)): len(df)]  # Last 'window size' number of days, including today
 
-        # ------------------------------------------ 1. CUMULATIVE REWARD ------------------------------------------
-        fig = plt.figure(figsize=(16.5, 10.0))
+        fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, sharex=True, figsize=(16.5, 10.0))
 
-        ax1 = plt.subplot2grid((4, 1), (0, 0))
-        plt.plot(steps, rewardsum)
+        # ------------------------------------------ 1. CUMULATIVE REWARD ------------------------------------------
+        ax1.plot(steps, rewardsum)
         # plt.xlabel('Days')
-        plt.ylabel('Cumulative Reward ($)')
-        plt.tick_params(
+        ax1.set_ylabel('Cumulative Reward ($)')
+        ax1.tick_params(
             axis='x',  # changes apply to the x-axis
             which='both',  # both major and minor ticks are affected
             bottom=False,  # ticks along the bottom edge are off
             top=False,  # ticks along the top edge are off
             labelbottom=False)  # labels along the bottom edge are off
-        plt.title('Days vs Cumulative Reward - Window size {}'.format(window_size))
-        plt.scatter(steps, rewardsum, s=50)
-        ax1.xaxis.set_major_locator(mticker.MaxNLocator(len(steps) + 3))
-        plt.grid(True)
+        ax1.set_title('Days vs Cumulative Reward - Window size {}'.format(window_size))
+        ax1.scatter(steps, rewardsum, s=50)
+        ax1.grid(True)
 
         # ------------------------------------------ 2. IMMEDIATE REWARD ------------------------------------------
-
-        ax2 = plt.subplot2grid((4, 1), (1, 0))
-        plt.plot(steps, rewards, label='Immediate Reward')  # Step
-        plt.legend(loc='upper right')
+        ax2.plot(steps, rewards, label='Immediate Reward')  # Step
+        ax2.legend(loc='upper right')
         # plt.xlabel('Days')
-        plt.ylabel('Immediate Reward ($)')
-        plt.tick_params(
+        ax2.set_ylabel('Immediate Reward ($)')
+        ax2.tick_params(
             axis='x',  # changes apply to the x-axis
             which='both',  # both major and minor ticks are affected
             bottom=False,  # ticks along the bottom edge are off
             top=False,  # ticks along the top edge are off
             labelbottom=False)  # labels along the bottom edge are off
-        plt.title('Days vs Immediate Reward - Window size {}'.format(window_size))
-        plt.scatter(steps, rewards, s=50)
-        ax2.xaxis.set_major_locator(mticker.MaxNLocator(len(steps) + 3))
-        plt.grid(True)
+        ax2.set_title('Days vs Immediate Reward - Window size {}'.format(window_size))
+        ax2.scatter(steps, rewards, s=50)
+        ax2.grid(True)
 
         # ------------------------------------------ 3. STOCK PRICES ------------------------------------------
-
         # Getting close and open prices
         data_close = df['Close'].values
         data_close = np.asarray(data_close)
@@ -108,18 +94,16 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
             if position[i] == 2:  # Buy
                 color.append('blue')
 
-        ax3 = plt.subplot2grid((4, 1), (2, 0))
-        plt.plot(steps, price_c, label='Close price')
-        plt.plot(steps, price_o, label='Open price')
-        plt.scatter(steps, price_o, c=color, s=50)
-        ax3.xaxis.set_major_locator(mticker.MaxNLocator(len(steps) + 3))
-        plt.grid(True)
+        ax3.plot(steps, price_c, label='Close price')
+        ax3.plot(steps, price_o, label='Open price')
+        ax3.scatter(steps, price_o, c=color, s=50)
+        ax3.grid(True)
 
-        plt.legend(loc='upper right')
+        ax3.legend(loc='upper right')
         # plt.xlabel('Days')
-        plt.ylabel('Close and Open Prices ($)')
-        plt.title('Prices and Position at each day')
-        plt.tick_params(
+        ax3.set_ylabel('Close and Open Prices ($)')
+        ax3.set_title('Prices and Position at each day')
+        ax3.tick_params(
             axis='x',  # changes apply to the x-axis
             which='both',  # both major and minor ticks are affected
             bottom=False,  # ticks along the bottom edge are off
@@ -129,9 +113,12 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
         # ------------------------------------------ 4. CANDLESTICKS ------------------------------------------
 
         start = window_size
-        ax4 = plt.subplot2grid((4, 1), (3, 0))
-
-        test_array = []
+        closes = []
+        opens = []
+        col = []
+        bottoms = []
+        colors = []
+        w = 0.6
 
         # Creating the array
         for i in range(window_size, window_size + len(steps)):
@@ -146,46 +133,39 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
             open = data[2]
             high = data[3]
 
-            test_array.append([high, close, open, low])
-        test_array = np.transpose(test_array)
+            closes.append(close)
+            opens.append(open)
 
         # Converting date to pandas datetime format
         df['Date'] = pd.to_datetime(df['Date'])
-        og_dates = []
+        og_dates = [(df['Date'].iloc[window_size - 1]).strftime('%d-%m-%Y')]
 
         # Converting datetime objects to the correct date format
         for i in range(window_size, window_size + len(steps)):
             og_dates.append((df['Date'].iloc[i]).strftime('%d-%m-%Y'))
 
         # Graph drawing parameters
-        w = 0.6
         lw = 0.5
 
-        for j in range(0, len(test_array[0])):  # 0 -> Total number of columns
-            for i in range(0, len(test_array)):  # 0 -> Total number of rows
-
-                low = test_array[len(test_array) - 1][j]
-                open = test_array[len(test_array) - 2][j]
-                close = test_array[len(test_array) - 3][j]
-                high = test_array[len(test_array) - 4][j]
-
-            # Coloring the graph based on open and close differences
-            if close > open:
-                ax4.bar(og_dates[j], close - open, width=w, bottom=open, color='Black',
-                        linewidth=lw)
+        for i in range(0, len(closes)):  # 0 -> Total number of columns
+            col.append(abs(closes[i] - opens[i]))
+            if closes[i] > opens[i]:
+                bottoms.append(opens[i])
+                colors.append('Black')
             else:
-                ax4.bar(og_dates[j], open - close, width=w, bottom=close, color='Red',
-                        linewidth=lw)
+                bottoms.append(closes[i])
+                colors.append('Red')
 
+        ax4.bar(steps, col, bottom=bottoms, color=colors, width=w)
+        ax4.set_xticklabels(og_dates)
         for label in ax4.xaxis.get_ticklabels():
             label.set_rotation(45)
 
-        ax4.xaxis.set_major_locator(mticker.MaxNLocator(len(steps) + 3))
         ax4.grid(True)
 
-        plt.xlabel('Date')
-        plt.ylabel('Price ($)')
-        plt.title('S&P500')
+        ax4.set_xlabel('Date')
+        ax4.set_ylabel('Price ($)')
+        ax4.set_title('S&P500')
 
         # Creating directory if it doesn't exist
         if not os.path.exists(os.path.dirname(graphpath)):
