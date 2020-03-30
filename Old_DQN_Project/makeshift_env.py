@@ -1,7 +1,3 @@
-import math
-import gym
-from gym import spaces, logger
-from gym.utils import seeding
 import numpy as np
 import pandas as pd
 from PIL import Image
@@ -9,7 +5,6 @@ from np_array_data import compute_array, reduce_dim, coloring
 from Trends import get_trends
 import os
 import errno
-import datetime
 
 
 class StockTradingEnv:
@@ -32,10 +27,11 @@ class StockTradingEnv:
         Adjusted Closing Price of the stock at the start of the time-series
     """
 
-    def __init__(self, mode, steps, stock, trend, window_size):
+    def __init__(self, mode, steps, stock, trend, date, window_size):
         self.stockname = stock
         self.trendname = trend
         self.filename = self.stockname + "_" + self.trendname
+        self.folder_name = date
 
         # Reading the data
         self.df_stocks = pd.read_csv("{}_Stock.csv".format(self.stockname))
@@ -158,9 +154,8 @@ class StockTradingEnv:
             if action == 2:
                 action_actual = 'Buy'
 
-            folder_name = str(datetime.datetime.date(datetime.datetime.now()) - datetime.timedelta(days=1))
             # Creating directory if it doesn't exist
-            graphpath = 'Results/{}/{} ({}). Window Size - {}/Test Images/'.format(folder_name, self.filename, self.date_stocks_range,
+            graphpath = 'Results_{}_{}/{}/{} ({}). Window Size - {}/Test Images/'.format(self.stockname, self.trendname, self.folder_name, self.filename, self.date_stocks_range,
                                                                                 self.window_size)
             if not os.path.exists(os.path.dirname(graphpath)):
                 try:

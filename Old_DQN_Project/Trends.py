@@ -5,10 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
-
 def get_trends(keyword, days, end_date):
     """Specify start and end date as well es the required keyword for your query"""
-    print("Trend keyword: ", keyword)
+    print("Trend keyword: ", type(keyword))
 
     """Calculating start date from end date, based on given interval"""
     end_date += datetime.timedelta(days=1)
@@ -60,6 +59,7 @@ def get_trends(keyword, days, end_date):
         except:
             print("Timed out. Retrying in {} secs...".format(waiting_time))
             time.sleep(waiting_time)
+            i -= 1
         i += 1
 
     # print(interest_list)

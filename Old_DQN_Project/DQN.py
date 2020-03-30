@@ -350,6 +350,8 @@ def experiments(stock, trend, window_size, date_of_prediction):
     # Converting trends data to candlesticks, truncating and cleaning both data files
     training_set = 200
     testing_set = 1
+
+    # Make sure final length <= days_to_be_scraped
     final_length = training_set + testing_set + window_size
     stock_df = pd.read_csv('{}_Stock.csv'.format(stock))
     trend_df = pd.read_csv('{}_Trend.csv'.format(trend))
@@ -372,26 +374,26 @@ if __name__ == "__main__":
     trendname = 'S&P500'
     windowsize = 16
 
-    # Testing out stuff
-    date_of_prediction = str(datetime.date(2020, 2, 20))  # Y-M-D
-    # mode = 'Train'
+    # # Testing out stuff
+    # date_of_prediction = str(datetime.date(2020, 2, 20))  # Y-M-D
+    # # mode = 'Train'
+    # # DQN_Agent(mode, stockname, trendname, date_of_prediction, windowsize)
+    # mode = 'Test'
     # DQN_Agent(mode, stockname, trendname, date_of_prediction, windowsize)
-    mode = 'Test'
-    DQN_Agent(mode, stockname, trendname, date_of_prediction, windowsize)
 
     # Experiments Automation
-    # date_of_prediction = datetime.datetime.date(datetime.datetime.now()) - datetime.timedelta(days=1)
-    # experiments(stockname, trendname, windowsize, date_of_prediction)
+    date_of_prediction = datetime.datetime.date(datetime.datetime.now()) - datetime.timedelta(days=1)
+    experiments(stockname, trendname, windowsize, date_of_prediction)
 
     # Intermediate Layers Visualizatio
     # visualization(window_size)
 
 #TODO:
-# HOW TO TEST: Set date of prediction, Download stocks, Run trends, Run Cleaning, Run DQN
-# Friday - 3 good, 3 bad proposals
-# Data padding - not sure how(Google trends doesn't give me hourly resolution data for 28/2-05/3), experiments
-# 1. Intro (problem def - end), 2. Methods 3. Results, 4. Summary and conclusion
-# Train on less data?
+# Experiments date ranges - 1 year back from -> (12/31/2019 and 02/28/2020)
+# Experiment keywords -> Any Stock + Stockmarket Crash (2019), Any Stock + Coronavirus (2020)
+# HOW TO TEST (manually): Set date of prediction, Download stocks, Run trends, Run Cleaning, Run DQN
+# HOW TO TEST (automatically): Comment out lines 375 to 380. Uncomment 385 nad 386. Run the Batchfile post midnight.
+# # Train on less data?
 # Decay exploration faster?
 # Train more epochs?
 # Batches
