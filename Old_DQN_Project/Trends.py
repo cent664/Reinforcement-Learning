@@ -111,5 +111,5 @@ def get_trends(keyword, days, end_date):
 if __name__ == '__main__':
     trend = 'S&P500'
     days = 365
-    date_of_prediction = datetime.date(2020, 2, 20)  # Y-M-D
+    date_of_prediction = datetime.date(2020, 3, 25)  # Y-M-D
     get_trends(trend, days, date_of_prediction)
