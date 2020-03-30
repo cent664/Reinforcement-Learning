@@ -3,11 +3,12 @@ from pytrends.request import TrendReq
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 
 def get_trends(keyword, days, end_date):
     """Specify start and end date as well es the required keyword for your query"""
-    print("Trend keyword: ", type(keyword))
+    print("Trend keyword: ", keyword)
 
     """Calculating start date from end date, based on given interval"""
     end_date += datetime.timedelta(days=1)
@@ -47,13 +48,18 @@ def get_trends(keyword, days, end_date):
 
     # Here we download the data and print the current status of the process
     i = 0
+    waiting_time = 60
     while i < len(weekly_date_list) - 1:
         key = str(weekly_date_list[i]) + "T00 " + str(weekly_date_list[i+1]) + "T00"
-        p = TrendReq()
-        p.build_payload(kw_list=[keyword], timeframe=key)
-        interest = p.interest_over_time()
-        interest_list.append(interest)
-        print("GoogleTrends Call {} of {} : Timeframe: {} ".format(i + 1, len(weekly_date_list) - 1, key))
+        try:
+            p = TrendReq()
+            p.build_payload(kw_list=[keyword], timeframe=key)
+            interest = p.interest_over_time()
+            interest_list.append(interest)
+            print("GoogleTrends Call {} of {} : Timeframe: {} ".format(i + 1, len(weekly_date_list) - 1, key))
+        except:
+            print("Timed out. Retrying in {} secs...".format(waiting_time))
+            time.sleep(waiting_time)
         i += 1
 
     # print(interest_list)
