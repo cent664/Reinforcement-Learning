@@ -1,18 +1,8 @@
 After batch is better
-Decay rate and gamma don't really matter much
-1 year 10 episodes might be prone to overfitting, train less epochs? TEST AFTER STABLE RESULTS
-5 year, 10 ep seems optimal
-Filter size, window size
-Training showed consistent improvement when using just stock images. Stock + Trend is inconsistent.
-Volatile trends candlesticks (Stockmarket crash) - Inconsistent results, not sure if its learning
-Stale trends candlesticks (Bitcoin) - Seems to do better but still testing, also testing simple representation
-
+Decay after each step was FAR better than after each episode (lead to convergence)
+10 episodes are fine, just make sure you're decaying exploration rate fast enough
+Having good keywords sees to be the key so far
 
 TO DO:
 
-Automate everything
-
-Better keywords (7, 8)
-Ensemble learning
-different filter sizes?
-maybe try different trends time frames? (not 10am - 4pm)
+Run more experiments with different keywords
