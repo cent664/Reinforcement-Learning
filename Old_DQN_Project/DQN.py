@@ -25,7 +25,7 @@ gamma = 0.95  # Discount factor
 learning_rate = 0.00025  # Learning rate
 
 # TODO: Play with memory and batch size
-memory_size = 100  # Memory pool for experience replay, forgets older values as the size is exceeded
+memory_size = 1000000  # Memory pool for experience replay, forgets older values as the size is exceeded
 batch_size = 32  # Batch size for random sampling in the memory pool
 
 # TODO: Play with exploration rate and decay
@@ -92,12 +92,16 @@ class DQNSolver:
 
         # Saving the weights
         self.model.save_weights('CNN_DQN_weights.h5')
+        
+        # Decaying exploration rate at every step
+        self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
+        self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
 
-        # To decay the exploration rate if the episode changes
-        if episode != self.old_episode:
-            self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
-            self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
-        self.old_episode = episode
+        # # To decay the exploration rate if the episode changes
+        # if episode != self.old_episode:
+        #     self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
+        #     self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
+        # self.old_episode = episode
 
     def instantiate_load_and_return_model(self):
         self.model.load_weights('CNN_DQN_weights.h5', by_name=True)
@@ -105,12 +109,12 @@ class DQNSolver:
 
 
 @timeit
-def DQN_Agent(mode, stock, trend, date, window_size):
+def DQN_Agent(mode, stock, trend, date, window_size, steptotal):
 
     # ------------------------------------------------ TRAINING --------------------------------------------------------
     if mode == 'Train':
         episodes = 10
-        steps = 200
+        steps = steptotal
 
         print('\nTraining...\n')
 
@@ -184,7 +188,7 @@ def DQN_Agent(mode, stock, trend, date, window_size):
     # ------------------------------------------------ TESTING ---------------------------------------------------------
     if mode == 'Test':
         test_episodes = 1
-        test_steps = 1
+        test_steps = steptotal
 
         print('\nTesting...\n')
 
@@ -352,7 +356,7 @@ def experiments(stock, trend, window_size, date_of_prediction):
     testing_set = 1
 
     # Make sure final length <= days_to_be_scraped
-    final_length = training_set + testing_set + window_size
+    final_length = training_set + testing_set + 2*window_size
     stock_df = pd.read_csv('{}_Stock.csv'.format(stock))
     trend_df = pd.read_csv('{}_Trend.csv'.format(trend))
 
