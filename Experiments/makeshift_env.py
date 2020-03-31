@@ -38,11 +38,11 @@ class StockTradingEnv:
         self.df_trends = pd.read_csv("{}_Trend.csv".format(self.trendname))
 
         if mode == 'Train':
-            self.df_stocks = self.df_stocks[len(self.df_stocks) - (window_size + steps + 1): len(self.df_stocks) - 1]
-            self.df_trends = self.df_trends[len(self.df_trends) - (window_size + steps + 1): len(self.df_trends) - 1]
+            self.df_stocks = self.df_stocks[0: steps + window_size]
+            self.df_trends = self.df_trends[0: steps + window_size]
         else:
-            self.df_stocks = self.df_stocks[len(self.df_stocks) - (window_size + steps): len(self.df_stocks)]
-            self.df_trends = self.df_trends[len(self.df_trends) - (window_size + steps): len(self.df_trends)]
+            self.df_stocks = self.df_stocks[len(self.df_stocks) - (steps + window_size): len(self.df_stocks)]
+            self.df_trends = self.df_trends[len(self.df_trends) - (steps + window_size): len(self.df_trends)]
 
         # Converting String to datetime
         self.data_stocks_date = self.df_stocks['Date']
@@ -87,8 +87,8 @@ class StockTradingEnv:
         self.trends_scaling_factor = self.trends_scaling_factor / 2  # To account for the shift from centering close
 
         # Calculating the date range of the data in question (used when saving graphs/files)
-        self.start_stocks_date = self.df_stocks['Date'].iloc[self.window_size]
-        self.end_stocks_date = self.df_stocks['Date'].iloc[self.window_size + steps - 1]
+        self.start_stocks_date = self.df_stocks['Date'].iloc[self.window_size - 1]
+        self.end_stocks_date = self.df_stocks['Date'].iloc[len(self.df_stocks) - 1]
         self.date_stocks_range = self.start_stocks_date + " to " + self.end_stocks_date
         self.date_stocks_range = self.date_stocks_range.replace('/', '-')
 

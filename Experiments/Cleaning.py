@@ -114,7 +114,7 @@ def convert_and_clean(df_stock, df_trend, trend, stock, final_length):
 if __name__ == '__main__':
     trend = "S&P500 stock"
     stock = "S&P500"
-    final_length = 230
+    final_length = 223
     stock_df = pd.read_csv('{}_Stock.csv'.format(stock))
     trend_df = pd.read_csv('{}_Trend.csv'.format(trend))
     convert_and_clean(stock_df, trend_df, trend, stock, final_length)

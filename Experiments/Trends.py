@@ -108,7 +108,7 @@ def get_trends(keyword, days, end_date):
     df["Scale_{}".format(keyword)] = df["Scale_{}".format(keyword)]/max_interest * 100
 
     # print(df.describe())
-    df.to_csv(r'C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\{}_Trend.csv'.format(keyword))
+    df.to_csv(r'C:\Users\Niv\PycharmProjects\ReinforcementLearning\{}_Trend.csv'.format(keyword))
 
     # plt.plot(df)
     # plt.xlabel('Time')
