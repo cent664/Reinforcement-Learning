@@ -2,12 +2,13 @@ import datetime
 from pytrends.request import TrendReq
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import time
+import matplotlib.pyplot as plt
+
 
 def get_trends(keyword, days, end_date):
     """Specify start and end date as well es the required keyword for your query"""
-    print("Trend keyword: ", type(keyword))
+    print("Trend keyword: ", keyword)
 
     """Calculating start date from end date, based on given interval"""
     end_date += datetime.timedelta(days=1)
@@ -55,6 +56,8 @@ def get_trends(keyword, days, end_date):
             p.build_payload(kw_list=[keyword], timeframe=key)
             interest = p.interest_over_time()
             interest_list.append(interest)
+            print(i)
+            print(interest)
             print("GoogleTrends Call {} of {} : Timeframe: {} ".format(i + 1, len(weekly_date_list) - 1, key))
         except:
             print("Timed out. Retrying in {} secs...".format(waiting_time))
@@ -105,7 +108,7 @@ def get_trends(keyword, days, end_date):
     df["Scale_{}".format(keyword)] = df["Scale_{}".format(keyword)]/max_interest * 100
 
     # print(df.describe())
-    df.to_csv(r'C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\{}_Trend.csv'.format(keyword))
+    df.to_csv(r'C:\Users\Niv\PycharmProjects\ReinforcementLearning\{}_Trend.csv'.format(keyword))
 
     # plt.plot(df)
     # plt.xlabel('Time')
@@ -115,7 +118,40 @@ def get_trends(keyword, days, end_date):
 
 
 if __name__ == '__main__':
-    trend = 'S&P500'
+    # (12/31/2019 and 02/20/2020)
+
+    # keywords1 = 'S&P500 stock' 2019, 'Stockmarket crash' 2019, 'S&P500 stock' 2020, 'Coronavirus' 2020
+    # keywords2 = 'Netflix stock' 2019, 'Stockmarket crash' 2019, 'Netflix stock' 2020, 'Coronavirus' 2020
+
+    # # specific trends(2019):
+    # trend = 'S&P500 stock'
+    # days = 365
+    # date_of_prediction = datetime.date(2019, 12, 31)  # Y-M-D
+    # get_trends(trend, days, date_of_prediction)
+    #
+    # trend = 'Netflix stock'
+    # days = 365
+    # date_of_prediction = datetime.date(2019, 12, 31)  # Y-M-D
+    # get_trends(trend, days, date_of_prediction)
+
+    # # specific trends(2020):
+    # trend = 'S&P500 stock'
+    # days = 365
+    # date_of_prediction = datetime.date(2020, 2, 20)  # Y-M-D
+    # get_trends(trend, days, date_of_prediction)
+
+    # trend = 'Netflix stock'
+    # days = 365
+    # date_of_prediction = datetime.date(2020, 2, 20)  # Y-M-D
+    # get_trends(trend, days, date_of_prediction)
+
+    # common trends:
+    trend = 'Stockmarket crash'
     days = 365
-    date_of_prediction = datetime.date(2020, 3, 25)  # Y-M-D
+    date_of_prediction = datetime.date(2020, 2, 20)  # Y-M-D
     get_trends(trend, days, date_of_prediction)
+
+    # trend = 'Coronavirus'
+    # days = 365
+    # date_of_prediction = datetime.date(2020, 2, 20)  # Y-M-D
+    # get_trends(trend, days, date_of_prediction)
