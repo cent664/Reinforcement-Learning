@@ -16,7 +16,7 @@ Assignments and Project from Reinforcement Learning (6890)
 
 **Correlation between 'Netflix' stock data and 'Stockmarket crash' Trend data for 2018 - 2019**
 
-![Correlation between 'Netflix' stock data and 'Stockmarket crash' Trend data for 2018 - 2019](/Project/images/test.png)
+![Correlation between 'Netflix' stock data and 'Stockmarket crash' Trend data for 2018 - 2019](/Project/images/correlation.png)
 
 **Image Representation**
 
