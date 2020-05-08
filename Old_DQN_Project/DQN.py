@@ -12,9 +12,6 @@ from utils import timeit
 from PIL import Image
 import os
 import errno
-from Stocks import scraping
-from Trends import get_trends
-from Rename import rename_file
 from Cleaning import convert_and_clean
 import pandas as pd
 import datetime
@@ -30,7 +27,7 @@ batch_size = 32  # Batch size for random sampling in the memory pool
 
 # TODO: Play with exploration rate and decay
 exploration_max = 1.0  # Initial exploration rate
-exploration_min = 0.01  # Min value of exploration rate post decay
+exploration_min = 0.1  # Min value of exploration rate post decay
 exploration_decay = 0.995  # Exploration rate decay rate
 
 
@@ -76,9 +73,10 @@ class DQNSolver:
 
     def experience_replay(self, episode):
 
-        if len(self.memory) < batch_size:  # If has enough memory obtained, perform random batch sampling among those
+        if len(self.memory) < batch_size:  # Not enough memory, do nothing
             return
 
+        # If has enough memory obtained, perform random batch sampling among those
         batch = random.sample(self.memory, batch_size)  # Get a random batch
         for state, action, reward, state_next in batch:
 
@@ -90,9 +88,6 @@ class DQNSolver:
             # Update the weights of the network based on the updated q value (based on immediate reward)
             self.model.fit(state, q_values, epochs=1, verbose=0)
 
-        # Saving the weights
-        self.model.save_weights('CNN_DQN_weights.h5')
-        
         # Decaying exploration rate at every step
         self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
         self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
@@ -102,6 +97,9 @@ class DQNSolver:
         #     self.exploration_rate = self.exploration_rate * exploration_decay  # Decay exploration rate
         #     self.exploration_rate = max(exploration_min, self.exploration_rate)  # Do not go below the minimum
         # self.old_episode = episode
+
+        # Saving the weights
+        self.model.save_weights('CNN_DQN_weights.h5')
 
     def instantiate_load_and_return_model(self):
         self.model.load_weights('CNN_DQN_weights.h5', by_name=True)
@@ -243,11 +241,6 @@ def DQN_Agent(mode, stock, trend, date, window_size, steptotal):
                 state = state_next  # Update the state
                 if step == test_steps:
                     score.append(cumulative_reward)
-
-                    # Saving plot into to be compiled every 7 days
-                    f = open(r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\TestArea\temp_{}_{}.txt".format(stock, trend), "a")
-                    f.write("{}~{}~{}~{}~{}~{}~{}~{}~{}\n".format(step_x[0], cumulative_reward_y1[0], rewards_y2[0], actions_taken[0], episode, window_size, date_range, filename, mode))
-                    f.close()
                     twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, episode, window_size, date_range, filename, date, mode, False)
                     break
                 else:
@@ -255,40 +248,6 @@ def DQN_Agent(mode, stock, trend, date, window_size, steptotal):
 
             # print("Episode: {}. Score : {}".format(episode, score[episode]))
             episode += 1
-
-        # plt.show()
-
-        # Counting the number of folders in the current results folder
-        folders = 0
-        path = r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\Results_{}_{}".format(stock, trend)
-        for _, dirnames, _ in os.walk(path):
-            folders += len(dirnames)
-
-        if folders % (7*4) == 0:  # if they're 7 days worth of results (or multiples of it - 4 folders for each day)
-            results(stock, trend, date)  # compile and save a weeks worth of results
-
-
-# To compile the last 7 days results
-def results(stock, trend, date):
-    f = open(r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\TestArea\temp_{}_{}.txt".format(stock, trend), "r")
-    step_x = []
-    rewards_y2 = []
-    cumulative_reward_y1 = []
-    cumulative_reward = 0
-    actions_taken = []
-    for i in range(7):
-        _, _, reward, action, episode, window_size, date_range, filename, mode = (f.readline()).split("~")
-
-        step_x.append(i+1)
-        rewards_y2.append(float(reward))
-        cumulative_reward += float(reward)
-        cumulative_reward_y1.append(cumulative_reward)
-        actions_taken.append(int(action))
-    mode = mode.strip()  # To get rid of new line
-    twodplot(step_x, cumulative_reward_y1, rewards_y2, actions_taken, int(episode), int(window_size), date_range, filename, date, mode, True)
-    f.close()
-    os.remove(r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\TestArea\temp_{}_{}.txt".format(stock, trend))
-    print("Old file removed! Ready for a new week of predictions.")
 
 
 def visualization(window_size):  # To visualize intermediate layers
@@ -336,67 +295,34 @@ def visualization(window_size):  # To visualize intermediate layers
         image_temp.save(path + "{}.bmp".format(i))
 
 
-def experiments(stock, trend, window_size, date_of_prediction):
-    # Downloading stock data
-    scraping(stock)
-
-    # Defining input directory (post download) and target directory (post renaming)
-    input_dir = r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\Data"
-    target = r"C:\Users\Flann lab\PycharmProjects\Reinforcement-Learning\{}_Stock.csv".format(stock)
-
-    # Renaming and saving
-    rename_file(input_dir, target)
-
-    # Downloading trend data
-    days_to_be_scraped = 365
-    get_trends(trend, days_to_be_scraped, date_of_prediction)
-
-    # Converting trends data to candlesticks, truncating and cleaning both data files
-    training_set = 200
-    testing_set = 1
-
-    # Make sure final length <= days_to_be_scraped
-    final_length = training_set + testing_set + 2*window_size
-    stock_df = pd.read_csv('{}_Stock.csv'.format(stock))
-    trend_df = pd.read_csv('{}_Trend.csv'.format(trend))
-
-    go = convert_and_clean(stock_df, trend_df, trend, stock, final_length)
-    # go = True
-    if not go:
-        print("Stock Market is closed today!")
-    else:
-        print("Stock Market is open. Let's go:")
-        """ --------------------------------------- ACTUAL ALGORITHM ----------------------------------------------- """
-        mode = 'Train'
-        DQN_Agent(mode, stock, trend, window_size, date_of_prediction)
-        mode = 'Test'
-        DQN_Agent(mode, stock, trend, window_size, date_of_prediction)
-
-
 if __name__ == "__main__":
-    stockname = 'S&P500'
-    trendname = 'S&P500'
+    stockname = 'NFLX'
+    trendname = 'HBO'
     windowsize = 16
+    train_steps = 200
+    test_steps = 7
+    final_length = train_steps + test_steps + 2*windowsize
 
-    # # Testing out stuff
-    # date_of_prediction = str(datetime.date(2020, 2, 20))  # Y-M-D
-    # # mode = 'Train'
-    # # DQN_Agent(mode, stockname, trendname, date_of_prediction, windowsize)
-    # mode = 'Test'
-    # DQN_Agent(mode, stockname, trendname, date_of_prediction, windowsize)
+    # Cleaning
+    stock_df = pd.read_csv('{}_Stock.csv'.format(stockname))
+    trend_df = pd.read_csv('{}_Trend.csv'.format(trendname))
+    convert_and_clean(stock_df, trend_df, trendname, stockname, final_length)
 
-    # Experiments Automation
-    date_of_prediction = datetime.datetime.date(datetime.datetime.now()) - datetime.timedelta(days=1)
-    experiments(stockname, trendname, windowsize, date_of_prediction)
+    # Testing out stuff
+    date_of_prediction = str(datetime.date(2018, 12, 31))  # Y-M-D ((2019, 12, 31) and (2020, 2, 20))
+    mode = 'Train'
+    DQN_Agent(mode, stockname, trendname, date_of_prediction, windowsize, train_steps)
+    mode = 'Test'
+    DQN_Agent(mode, stockname, trendname, date_of_prediction, windowsize, test_steps)
 
-    # Intermediate Layers Visualizatio
+    # Intermediate Layers Visualization
     # visualization(window_size)
 
 #TODO:
-# Experiments date ranges - 1 year back from -> (12/31/2019 and 02/28/2020)
+# 14 days of testing -> 200 + 16 + 14 = 230 final length
+# Experiments date ranges - 1 year back from -> (12/31/2019 and 02/20/2020)
 # Experiment keywords -> Any Stock + Stockmarket Crash (2019), Any Stock + Coronavirus (2020)
 # HOW TO TEST (manually): Set date of prediction, Download stocks, Run trends, Run Cleaning, Run DQN
-# HOW TO TEST (automatically): Comment out lines 375 to 380. Uncomment 385 nad 386. Run the Batchfile post midnight.
 # # Train on less data?
 # Decay exploration faster?
 # Train more epochs?

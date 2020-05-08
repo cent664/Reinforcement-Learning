@@ -36,7 +36,7 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
         plt.savefig(graphpath + '{}ing.png'.format(mode))
 
         # ------------------------------------------ SAVING THE ACTIONS ------------------------------------------
-        saving_actions(episode, graphpath, steps, actions, rewards, mode)
+        saving_actions(episode, rewardsum, graphpath, steps, actions, rewards, mode)
 
     if mode == 'Test':
         df = pd.read_csv('{}_Stock.csv'.format(stockname))
@@ -179,10 +179,10 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
         plt.savefig(graphpath + '{}ing.png'.format(mode))
 
         # ------------------------------------------ SAVING THE ACTIONS ------------------------------------------
-        saving_actions(episode, graphpath, steps, actions, rewards, mode)
+        saving_actions(episode, rewardsum, graphpath, steps, actions, rewards, mode)
 
 
-def saving_actions(episode, graphpath, steps, actions, rewards, mode):
+def saving_actions(episode, rewardsum, graphpath, steps, actions, rewards, mode):
     filename = 'Actions_taken'
     filename += "_{}.txt".format(mode)
 
@@ -195,9 +195,9 @@ def saving_actions(episode, graphpath, steps, actions, rewards, mode):
 
     for i in range(0, len(steps)):
         if actions[i] == 0:
-            f.write("Step = {}. Selling. Immediate Reward = {}\n".format(steps[i], rewards[i]))
+            f.write("Step = {}. Selling. Immediate Reward = {}. Cumulative Reward = {}\n".format(steps[i], rewards[i], rewardsum[i]))
         if actions[i] == 1:
-            f.write("Step = {}. Holding. Immediate Reward = {}\n".format(steps[i], rewards[i]))
+            f.write("Step = {}. Holding. Immediate Reward = {}. Cumulative Reward = {}\n".format(steps[i], rewards[i], rewardsum[i]))
         if actions[i] == 2:
-            f.write("Step = {}. Buying. Immediate Reward = {}\n".format(steps[i], rewards[i]))
+            f.write("Step = {}. Buying. Immediate Reward = {}. Cumulative Reward = {}\n".format(steps[i], rewards[i], rewardsum[i]))
     f.write("\n")
