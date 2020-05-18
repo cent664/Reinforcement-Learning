@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import errno
+from matplotlib.ticker import MaxNLocator
 
 
 # To plot the steps vs cumulative reward
@@ -160,6 +161,7 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
         ax4.set_xticklabels(og_dates)
         for label in ax4.xaxis.get_ticklabels():
             label.set_rotation(45)
+        ax1.set_xticks(np.arange(len(og_dates)))  # Forcing every label
 
         ax4.grid(True)
 
@@ -177,6 +179,7 @@ def twodplot(steps, rewardsum, rewards, actions, episode, window_size, date_rang
 
         # Saving the graph
         plt.savefig(graphpath + '{}ing.png'.format(mode))
+        # plt.show()
 
         # ------------------------------------------ SAVING THE ACTIONS ------------------------------------------
         saving_actions(episode, rewardsum, graphpath, steps, actions, rewards, mode)
@@ -193,7 +196,19 @@ def saving_actions(episode, rewardsum, graphpath, steps, actions, rewards, mode)
 
     f.write("Episode = {}.\n\n".format(episode))
 
+    # Counting profitability
+    poscount = 0
+    negcount = 0
+    zerocount = 0
+
     for i in range(0, len(steps)):
+        if rewards[i] > 0:
+            poscount += 1
+        elif rewards[i] < 0:
+            negcount += 1
+        else:
+            zerocount += 1
+
         if actions[i] == 0:
             f.write("Step = {}. Selling. Immediate Reward = {}. Cumulative Reward = {}\n".format(steps[i], rewards[i], rewardsum[i]))
         if actions[i] == 1:
