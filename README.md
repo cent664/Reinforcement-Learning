@@ -27,5 +27,5 @@ Assignments and Project from Reinforcement Learning (6890)
 **Correlation between 'Netflix' stock data and 'Stockmarket crash' Trend data for 2018 - 2019**
 ![Correlation between 'Netflix' stock data and 'Stockmarket crash' Trend data for 2018 - 2019](/Project/images/correlation.png)
 
-**Correlation Coefficient vs Cumulative Reward**
-![Correlation Coefficient vs Cumulative Reward](/Project/images/cc_vs_creward_combo.png)
+**Correlation Coefficient vs Cumulative Reward for 20 data sets**
+![Correlation Coefficient vs Cumulative Reward for 20 data sets](/Project/images/cc_vs_creward_combo.png)
