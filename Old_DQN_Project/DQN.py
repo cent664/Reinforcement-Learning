@@ -309,7 +309,7 @@ if __name__ == "__main__":
     convert_and_clean(stock_df, trend_df, trendname, stockname, final_length)
 
     # Testing out stuff
-    date_of_prediction = str(datetime.date(2018, 12, 31))  # Y-M-D ((2019, 12, 31) and (2020, 2, 20))
+    date_of_prediction = str(datetime.date(2020, 2, 20))  # Y-M-D ((2019, 12, 31) and (2020, 2, 20))
     mode = 'Train'
     DQN_Agent(mode, stockname, trendname, date_of_prediction, windowsize, train_steps)
     mode = 'Test'
